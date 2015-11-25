@@ -1,8 +1,13 @@
 language: go
-
 go:
-  - 1.5
+- 1.5
 before_install:
-  - pip install --user codecov
-after_success:
-  - codecov
+- go get github.com/axw/gocov/gocov
+- go get github.com/mattn/goveralls
+- if ! go get github.com/golang/tools/cmd/cover; then go get golang.org/x/tools/cmd/cover;
+  fi
+script:
+- "$HOME/gopath/bin/goveralls -service=travis-ci"
+notifications:
+  slack:
+    secure: WiOIHAVGLmF0CY2o8FKkb4bNgfhxLqiu7FKcoCotm5LfvG5WtlvoRqmJ5cMEgjCiBf2EfORSlfbLMoN0X9tShjJJaVVi0ywOsKYW7PJd3oSJkkoqFSGbcr250k1N9BP+R8LL7htbkT7Ggr1GCk/87D4yKH07h7abHA7a5458hdip84g8PkHDO40/wb92df+9apX2+SRryMEt/rFCap9Dot2Cg5c0ByB5hnmzRnu1jBugXL8i4nNRr2rVdEXGFnkhQ1yX1n/dgMGYFSXf5ObCJ5Z3tI13eNGPEnkVXcnTMywkdAzuTyJS4lWCayrxP5BJFTLDbAazdtPOwwKUwXduudAoU/ntiIgaHKXnyrEhCK/knzHjobqB1Aw9+TmeCGcPrvjet2qEXjsl1mu+46VncqeTlI94Qr+5AOsplqi4HlczzbY9Q27InOtCTSOIhhdCIIc7hAUh3lEwBWFA0UtHBbTWx2FaSxT8ryLKeqfIH4IOzD1rmK6xqhTBtdvL5SBCghY2k8yeXJXPBxwg2JVmjhvfbYFSGbVsyX+fJdqLrQpBgZgykjzgOxGU6zTM0SqqBP8rwforE7CvXNhadLeog8YZMj4tlhF0WNzghvBOBHrhjdI7jkXhF8mm5cr9iiZjfXSmz6kkYtrbUO0rBvHPT9zLdDUNI3oPO3MZouV9ojs=
