@@ -1,7 +1,7 @@
 package main
 
-import "fmt"
+import "github.com/dudang/golt/parser"
 
 func main() {
-	fmt.Println("load test!!")
+	parser.ParseInput()
 }
