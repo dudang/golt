@@ -1,8 +1,14 @@
 package parser
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
-func ParseInput() {
-	fmt.Println("parsing some new files")
-	fmt.Println("bad code coverage")
+func ParseInputFile(filename string) {
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+		fmt.Printf("no such file or directory: %s", filename)
+		return
+	}
+	fmt.Printf("file exists: %s", filename)
 }
