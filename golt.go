@@ -1,17 +1,33 @@
 package main
 
 import (
-	"flag"
+	"os"
+	"github.com/codegangsta/cli"
 	"github.com/dudang/golt/parser"
 )
 
 var filename string
-
-func init() {
-	flag.StringVar(&filename, "file", "golt.yaml", "full path to the load test file")
-}
+var version = "0.1"
 
 func main() {
-	flag.Parse()
-	parser.ParseInputFile(filename)
+	app := cli.NewApp()
+	app.Name = "golt"
+	// TODO: Find a good description for the cli
+	app.Usage = "Go Load Test Framework!!"
+	app.Version = version
+
+	app.Flags = []cli.Flag{
+		cli.StringFlag{
+			Name: "file",
+			Value: "golt.yaml",
+			Usage: "full path to the load test file",
+			Destination: &filename,
+		},
+	}
+
+	app.Action = func(c *cli.Context) {
+		parser.ParseInputFile(filename)
+	}
+
+	app.Run(os.Args)
 }
