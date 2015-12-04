@@ -25,18 +25,20 @@ func executeElement(testElement parser.GoltJson) {
 func spawnRoutine(testElement parser.GoltJson) {
 	switch testElement.Method {
 		case "GET":
-			getRequest(testElement.URL)
+			getRequest(testElement.URL, testElement.Repetitions)
 		default:
 			return
 	}
 	wg.Done()
 }
 
-func getRequest(url string) {
-	resp, err := http.Get(url)
-	resp.Body.Close()
-	if err != nil {
-		fmt.Printf("%v\n", err)
+func getRequest(url string, repetitions int) {
+	for i := 1; i <= repetitions; i++ {
+		resp, err := http.Get(url)
+		resp.Body.Close()
+		if err != nil {
+			fmt.Printf("%v\n", err)
+		}
+		fmt.Printf("Repetitions: %d  Status Code: %d\n", i, resp.StatusCode)
 	}
-	fmt.Println(resp.StatusCode)
 }

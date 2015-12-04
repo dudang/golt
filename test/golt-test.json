@@ -2,8 +2,8 @@
 	"golt": [{
 		"url": "http://www.google.com",
 		"method": "GET",
-		"threads": 100,
-		"repetitions": 10,
+		"threads": 10,
+		"repetitions": 5,
 		"stage": 1,
 		"assert": {
 			"timeout": 1000,
