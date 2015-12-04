@@ -14,12 +14,12 @@ func ExecuteJsonGolt(testPlan parser.GoltJsons) {
 }
 
 func executeElement(testElement parser.GoltJson) {
-	waitGroup := sync.WaitGroup
-	waitGroup.Add(testElement.Threads)
+	var wg sync.WaitGroup
+	wg.Add(testElement.Threads)
 	for i:= 0; i < testElement.Threads; i++ {
 		go spawnRoutine(testElement)
 	}
-	waitGroup.Wait()
+	wg.Wait()
 }
 
 func spawnRoutine(testElement parser.GoltJson) {
