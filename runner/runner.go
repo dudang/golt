@@ -6,6 +6,7 @@ import (
 	"github.com/dudang/golt/parser"
 )
 
+var wg sync.WaitGroup
 
 func ExecuteJsonGolt(testPlan parser.GoltJsons) {
 	for _, element := range testPlan.Golt {
@@ -14,7 +15,7 @@ func ExecuteJsonGolt(testPlan parser.GoltJsons) {
 }
 
 func executeElement(testElement parser.GoltJson) {
-	var wg sync.WaitGroup
+
 	wg.Add(testElement.Threads)
 	for i:= 0; i < testElement.Threads; i++ {
 		go spawnRoutine(testElement)
@@ -29,6 +30,7 @@ func spawnRoutine(testElement parser.GoltJson) {
 		default:
 			return
 	}
+	wg.Done()
 }
 
 func getRequest(url string) {
