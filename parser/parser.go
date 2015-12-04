@@ -3,12 +3,27 @@ package parser
 import (
 	"fmt"
 	"os"
+	"io/ioutil"
+	"path/filepath"
 )
 
 func ParseInputFile(filename string) {
-	if _, err := os.Stat(filename); os.IsNotExist(err) {
-		fmt.Printf("no such file or directory: %s", filename)
-		return
+	switch filepath.Ext(filename) {
+		case ".json":
+			fmt.Println("We're dealing with JSON!")
+		case ".yaml":
+			fmt.Println("We're dealing with YAML!")
+		default:
+			fmt.Println("Unknown file type, exiting")
+			os.Exit(1)
 	}
-	fmt.Printf("file exists: %s", filename)
+
+	file, e := ioutil.ReadFile(filename)
+
+	if e != nil {
+		fmt.Printf("File error, %v\n", e)
+		os.Exit(1)
+	}
+
+	fmt.Printf("%s\n",file)
 }
