@@ -4,6 +4,7 @@ import (
 	"os"
 	"github.com/codegangsta/cli"
 	"github.com/dudang/golt/parser"
+	"fmt"
 )
 
 var filename string
@@ -19,14 +20,20 @@ func main() {
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name: "file",
-			Value: "golt.yaml",
+			Value: "golt.json",
 			Usage: "full path to the load test file",
 			Destination: &filename,
 		},
 	}
 
 	app.Action = func(c *cli.Context) {
-		parser.ParseInputFile(filename)
+		golt, err := parser.ParseInputFile(filename)
+		if err != nil {
+			fmt.Println("Error occured during parsing of the file:")
+			fmt.Printf("%v\n",err)
+			os.Exit(1)
+		}
+		fmt.Printf("%v\n",golt)
 	}
 
 	app.Run(os.Args)
