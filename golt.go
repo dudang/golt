@@ -4,6 +4,7 @@ import (
 	"os"
 	"github.com/codegangsta/cli"
 	"github.com/dudang/golt/parser"
+	"github.com/dudang/golt/runner"
 	"fmt"
 )
 
@@ -33,7 +34,7 @@ func main() {
 			fmt.Printf("%v\n",err)
 			os.Exit(1)
 		}
-		fmt.Printf("%v\n",golt)
+		runner.ExecuteJsonGolt(golt)
 	}
 
 	app.Run(os.Args)

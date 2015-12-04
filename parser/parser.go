@@ -7,10 +7,14 @@ import (
 	"errors"
 )
 
-type GoltJson []struct {
+type GoltJsons struct {
+	Golt []GoltJson
+}
+
+type GoltJson struct {
 	URL string `json:"url"`
 	Method string `json:"method"`
-	Body string `json:"body"`
+	Payload string `json:"body"`
 	Threads int `json:"threads"`
 	Repetitions int `json:"repetitions"`
 	Duration int `json:"duration"`
@@ -24,10 +28,10 @@ type GoltJson []struct {
 		} `json:"assert"`
 }
 
-func ParseInputFile(filename string) (GoltJson, error) {
+func ParseInputFile(filename string) (GoltJsons, error) {
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return nil, err
+		return GoltJsons{}, err
 	}
 
 	switch filepath.Ext(filename) {
@@ -35,14 +39,14 @@ func ParseInputFile(filename string) (GoltJson, error) {
 			golt, err := jsonToStruct(file)
 			return golt, err
 		case ".yaml":
-			return nil, errors.New("We're dealing with YAML, but it's not yet implemented. Sorry !")
+			return GoltJsons{}, errors.New("We're dealing with YAML, but it's not yet implemented. Sorry !")
 		default:
-			return nil, errors.New("Unknown file type, exiting")
+			return GoltJsons{}, errors.New("Unknown file type, exiting")
 	}
 }
 
-func jsonToStruct(file []byte) (GoltJson, error) {
-	var golt GoltJson
+func jsonToStruct(file []byte) (GoltJsons, error) {
+	var golt GoltJsons
 	err := json.Unmarshal(file, &golt)
 	return golt, err
 }
