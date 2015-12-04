@@ -15,7 +15,6 @@ func ExecuteJsonGolt(testPlan parser.GoltJsons) {
 }
 
 func executeElement(testElement parser.GoltJson) {
-
 	wg.Add(testElement.Threads)
 	for i:= 0; i < testElement.Threads; i++ {
 		go spawnRoutine(testElement)
