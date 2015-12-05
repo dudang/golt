@@ -3,16 +3,16 @@ import (
 	"net/http"
 	"fmt"
 	"sync"
-	"github.com/dudang/golt/parser"
 	"bytes"
+	"github.com/dudang/golt/parser"
 )
 
 var wg sync.WaitGroup
 
 type httpRequest func(string) (*http.Response, error)
 
-func ExecuteJsonGolt(testPlan parser.Golt) {
-	for _, element := range testPlan.Golt {
+func ExecuteGoltTest(goltTest parser.Golt) {
+	for _, element := range goltTest.Golt {
 		executeElement(element)
 	}
 }

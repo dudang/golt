@@ -34,7 +34,7 @@ func main() {
 			fmt.Printf("%v\n",err)
 			os.Exit(1)
 		}
-		runner.ExecuteJsonGolt(golt)
+		runner.ExecuteGoltTest(golt)
 	}
 
 	app.Run(os.Args)
