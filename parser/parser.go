@@ -19,13 +19,14 @@ type GoltJson struct {
 	Repetitions int `json:"repetitions"`
 	Duration int `json:"duration"`
 	Stage int `json:"stage"`
-	Assert struct {
-			Timeout int `json:"timeout"`
-			Status int `json:"status"`
-			Headers struct {
-					} `json:"headers"`
-			Body string `json:"body"`
-		} `json:"assert"`
+	Assert GoltAssert`json:"assert"`
+}
+
+type GoltAssert struct {
+	Timeout int `json:"timeout"`
+	Status int `json:"status"`
+	Headers struct {} `json:"headers"`
+	Body string `json:"body"`
 }
 
 func ParseInputFile(filename string) (Golt, error) {
