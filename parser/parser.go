@@ -7,8 +7,8 @@ import (
 	"errors"
 )
 
-type GoltJsons struct {
-	Golt []GoltJson
+type Golt struct {
+	Golt []GoltJson `json:"golt"`
 }
 
 type GoltJson struct {
@@ -28,10 +28,10 @@ type GoltJson struct {
 		} `json:"assert"`
 }
 
-func ParseInputFile(filename string) (GoltJsons, error) {
+func ParseInputFile(filename string) (Golt, error) {
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return GoltJsons{}, err
+		return Golt{}, err
 	}
 
 	switch filepath.Ext(filename) {
@@ -39,14 +39,14 @@ func ParseInputFile(filename string) (GoltJsons, error) {
 			golt, err := jsonToStruct(file)
 			return golt, err
 		case ".yaml":
-			return GoltJsons{}, errors.New("We're dealing with YAML, but it's not yet implemented. Sorry !")
+			return Golt{}, errors.New("We're dealing with YAML, but it's not yet implemented. Sorry !")
 		default:
-			return GoltJsons{}, errors.New("Unknown file type, exiting")
+			return Golt{}, errors.New("Unknown file type, exiting")
 	}
 }
 
-func jsonToStruct(file []byte) (GoltJsons, error) {
-	var golt GoltJsons
+func jsonToStruct(file []byte) (Golt, error) {
+	var golt Golt
 	err := json.Unmarshal(file, &golt)
 	return golt, err
 }

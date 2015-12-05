@@ -20,7 +20,7 @@ func main() {
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name: "file",
+			Name: "file, f",
 			Value: "golt.json",
 			Usage: "full path to the load test file",
 			Destination: &filename,

@@ -4,41 +4,39 @@ import (
 	"fmt"
 	"sync"
 	"github.com/dudang/golt/parser"
+	"bytes"
 )
 
 var wg sync.WaitGroup
 
-func ExecuteJsonGolt(testPlan parser.GoltJsons) {
+type httpRequest func(string) (*http.Response, error)
+
+func ExecuteJsonGolt(testPlan parser.Golt) {
 	for _, element := range testPlan.Golt {
 		executeElement(element)
 	}
 }
 
-func executeElement(testElement parser.GoltJson) {
-	wg.Add(testElement.Threads)
-	for i:= 0; i < testElement.Threads; i++ {
-		go spawnRoutine(testElement)
+func executeElement(element parser.GoltJson) {
+	wg.Add(element.Threads)
+	for i:= 0; i < element.Threads; i++ {
+		go executeHttpRequest(element)
 	}
 	wg.Wait()
 }
 
-func spawnRoutine(testElement parser.GoltJson) {
-	switch testElement.Method {
-		case "GET":
-			getRequest(testElement.URL, testElement.Repetitions)
-		default:
-			return
-	}
-	wg.Done()
-}
+func executeHttpRequest(element parser.GoltJson) {
+	for i := 1; i <= element.Repetitions; i++ {
+		payload := []byte(element.Payload)
+		req, err := http.NewRequest(element.Method, element.URL, bytes.NewBuffer(payload))
 
-func getRequest(url string, repetitions int) {
-	for i := 1; i <= repetitions; i++ {
-		resp, err := http.Get(url)
-		resp.Body.Close()
+		client := &http.Client{}
+		resp, err := client.Do(req)
 		if err != nil {
 			fmt.Printf("%v\n", err)
 		}
-		fmt.Printf("Repetitions: %d  Status Code: %d\n", i, resp.StatusCode)
+		defer resp.Body.Close()
+		fmt.Printf("Repetitions: %d  Status Code: %d Success: %t\n", i, resp.StatusCode, resp.StatusCode == element.Assert.Status)
 	}
+	wg.Done()
 }
