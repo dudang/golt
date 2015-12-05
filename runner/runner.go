@@ -9,7 +9,7 @@ import (
 
 var wg sync.WaitGroup
 
-type httpRequest func(string) (*http.Response, error)
+var httpClient = &http.Client{}
 
 func ExecuteGoltTest(goltTest parser.Golt) {
 	for _, element := range goltTest.Golt {
@@ -30,8 +30,7 @@ func executeHttpRequest(element parser.GoltJson) {
 		payload := []byte(element.Payload)
 		req, err := http.NewRequest(element.Method, element.URL, bytes.NewBuffer(payload))
 
-		client := &http.Client{}
-		resp, err := client.Do(req)
+		resp, err := httpClient.Do(req)
 		if err != nil {
 			fmt.Printf("%v\n", err)
 		}
