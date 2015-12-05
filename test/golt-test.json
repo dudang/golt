@@ -1,49 +1,38 @@
 {
-	"golt": [
-      {
-		"url": "http://www.google.com",
-		"method": "GET",
-		"threads": 10,
-		"repetitions": 5,
-		"stage": 1,
-		"assert": {
-			"timeout": 1000,
-			"status": 200
-        }
-      },
-      {
-        "url": "http://www.google.com",
-        "method": "POST",
-        "threads": 10,
-        "payload": "{hello:json}",
-        "repetitions": 5,
-        "stage": 1,
-        "assert": {
-          "timeout": 1000,
-          "status": 200
-        }
-      },
-      {
-        "url": "http://www.google.com",
-        "method": "GET",
-        "threads": 10,
-        "repetitions": 5,
-        "stage": 1,
-        "assert": {
-          "timeout": 1000,
-          "status": 200
-        }
-      },
-      {
-        "url": "http://www.google.com",
-        "method": "GET",
-        "threads": 10,
-        "repetitions": 5,
-        "stage": 2,
-        "assert": {
-          "timeout": 1000,
-          "status": 200
-        }
+  "golt": [
+    {
+      "url": "http://www.google.com",
+      "method": "GET",
+      "threads": 10,
+      "repetitions": 5,
+      "stage": 1,
+      "assert": {
+        "timeout": 1000,
+        "status": 200
       }
-    ]
+    },
+    {
+      "url": "http://www.google.com",
+      "method": "POST",
+      "threads": 10,
+      "payload": "{hello:json}",
+      "repetitions": 5,
+      "stage": 1,
+      "assert": {
+        "timeout": 1000,
+        "status": 200
+      }
+    },
+    {
+      "url": "http://www.google.com",
+      "method": "GET",
+      "threads": 10,
+      "repetitions": 5,
+      "stage": 2,
+      "assert": {
+        "timeout": 1000,
+        "status": 200
+      }
+    }
+  ]
 }
