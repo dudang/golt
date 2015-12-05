@@ -10,6 +10,7 @@ before_install:
 
 script:
   - "$HOME/gopath/bin/goveralls -service=travis-ci"
+  - go test github.com/dudang/golt/parser
   
 notifications:
   slack:
