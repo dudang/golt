@@ -15,6 +15,4 @@ func generateGoltMap(goltTest parser.Golts) map[int][]parser.GoltItem {
 		}
 	}
 	return m
-
-
 }
