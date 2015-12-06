@@ -4,25 +4,44 @@ import (
 	"fmt"
 	"sync"
 	"bytes"
+	"sort"
 	"github.com/dudang/golt/parser"
 )
 
-var wg sync.WaitGroup
+var internalWaitGroup sync.WaitGroup
+var stageWaitGroup sync.WaitGroup
 
 var httpClient = &http.Client{}
 
 func ExecuteGoltTest(goltTest parser.Golt) {
-	for _, element := range goltTest.Golt {
-		executeElement(element)
+	m := generateGoltMap(goltTest)
+	
+	var keys []int
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+
+	for _, k := range keys {
+		executeStage(m[k])
 	}
 }
 
+func executeStage(stage []parser.GoltJson) {
+	stageWaitGroup.Add(len(stage))
+	for i:= 0; i < len(stage); i++ {
+		go executeElement(stage[i])
+	}
+	stageWaitGroup.Wait()
+}
+
 func executeElement(element parser.GoltJson) {
-	wg.Add(element.Threads)
+	internalWaitGroup.Add(element.Threads)
 	for i:= 0; i < element.Threads; i++ {
 		go executeHttpRequest(element)
 	}
-	wg.Wait()
+	internalWaitGroup.Wait()
+	stageWaitGroup.Done()
 }
 
 func executeHttpRequest(element parser.GoltJson) {
@@ -35,7 +54,7 @@ func executeHttpRequest(element parser.GoltJson) {
 			fmt.Printf("%v\n", err)
 		}
 		defer resp.Body.Close()
-		fmt.Printf("Repetitions: %d  Status Code: %d Success: %t\n", i, resp.StatusCode, resp.StatusCode == element.Assert.Status)
+		fmt.Printf("Stage: %d Repetitions: %d  Status Code: %d Success: %t\n", element.Stage, i, resp.StatusCode, resp.StatusCode == element.Assert.Status)
 	}
-	wg.Done()
+	internalWaitGroup.Done()
 }
