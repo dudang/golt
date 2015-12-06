@@ -1,11 +1,14 @@
 package runner
 import (
-	"net/http"
+	"time"
 	"fmt"
 	"sync"
 	"bytes"
 	"sort"
+	"net/http"
+
 	"github.com/dudang/golt/parser"
+	"github.com/dudang/golt/logger"
 )
 
 var internalWaitGroup sync.WaitGroup
@@ -25,6 +28,8 @@ func ExecuteGoltTest(goltTest parser.Golts) {
 	for _, k := range keys {
 		executeStage(m[k])
 	}
+	// We need to flush the remaining messages still in buffer after the test is over
+	logger.Flush()
 }
 
 func executeStage(stage []parser.GoltItem) {
@@ -50,11 +55,19 @@ func executeHttpRequest(item parser.GoltItem) {
 		req, err := http.NewRequest(item.Method, item.URL, bytes.NewBuffer(payload))
 
 		resp, err := httpClient.Do(req)
+		var msg string
 		if err != nil {
-			fmt.Printf("%v\n", err)
+			msg = fmt.Sprintf("%v\n", err)
 		}
 		defer resp.Body.Close()
-		fmt.Printf("Stage: %d Repetitions: %d  Status Code: %d Success: %t\n", item.Stage, i, resp.StatusCode, resp.StatusCode == item.Assert.Status)
+
+		msg = fmt.Sprintf("[%s] Stage: %d Repetitions: %d  Status Code: %d Success: %t\n",
+			time.Now().Format("2006-01-02 15:04:05"),
+			item.Stage,
+			i,
+			resp.StatusCode,
+			resp.StatusCode == item.Assert.Status)
+		logger.Log([]byte(msg))
 	}
 	internalWaitGroup.Done()
 }
