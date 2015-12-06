@@ -29,32 +29,32 @@ func ExecuteGoltTest(goltTest parser.Golts) {
 
 func executeStage(stage []parser.GoltItem) {
 	stageWaitGroup.Add(len(stage))
-	for i:= 0; i < len(stage); i++ {
-		go executeElement(stage[i])
+	for _, item := range stage{
+		go executeItem(item)
 	}
 	stageWaitGroup.Wait()
 }
 
-func executeElement(element parser.GoltItem) {
-	internalWaitGroup.Add(element.Threads)
-	for i:= 0; i < element.Threads; i++ {
-		go executeHttpRequest(element)
+func executeItem(item parser.GoltItem) {
+	internalWaitGroup.Add(item.Threads)
+	for i:= 0; i < item.Threads; i++ {
+		go executeHttpRequest(item)
 	}
 	internalWaitGroup.Wait()
 	stageWaitGroup.Done()
 }
 
-func executeHttpRequest(element parser.GoltItem) {
-	for i := 1; i <= element.Repetitions; i++ {
-		payload := []byte(element.Payload)
-		req, err := http.NewRequest(element.Method, element.URL, bytes.NewBuffer(payload))
+func executeHttpRequest(item parser.GoltItem) {
+	for i := 1; i <= item.Repetitions; i++ {
+		payload := []byte(item.Payload)
+		req, err := http.NewRequest(item.Method, item.URL, bytes.NewBuffer(payload))
 
 		resp, err := httpClient.Do(req)
 		if err != nil {
 			fmt.Printf("%v\n", err)
 		}
 		defer resp.Body.Close()
-		fmt.Printf("Stage: %d Repetitions: %d  Status Code: %d Success: %t\n", element.Stage, i, resp.StatusCode, resp.StatusCode == element.Assert.Status)
+		fmt.Printf("Stage: %d Repetitions: %d  Status Code: %d Success: %t\n", item.Stage, i, resp.StatusCode, resp.StatusCode == item.Assert.Status)
 	}
 	internalWaitGroup.Done()
 }

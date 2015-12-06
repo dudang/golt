@@ -31,7 +31,7 @@ func main() {
 		golt, err := parser.ParseInputFile(filename)
 		if err != nil {
 			fmt.Println("Error occured during parsing of the file:")
-			fmt.Printf("%v\n",err)
+			fmt.Printf("%v\n", err)
 			os.Exit(1)
 		}
 		runner.ExecuteGoltTest(golt)
