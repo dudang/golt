@@ -5,49 +5,55 @@ import (
 	"path/filepath"
 	"encoding/json"
 	"errors"
+	"gopkg.in/yaml.v2"
 )
 
-type Golt struct {
-	Golt []GoltJson `json:"golt"`
+type Golts struct {
+	Golt []GoltItem
 }
 
-type GoltJson struct {
-	URL string `json:"url"`
-	Method string `json:"method"`
-	Payload string `json:"body"`
-	Threads int `json:"threads"`
-	Repetitions int `json:"repetitions"`
-	Duration int `json:"duration"`
-	Stage int `json:"stage"`
-	Assert GoltAssert`json:"assert"`
+type GoltItem struct {
+	URL string
+	Method string
+	Payload string
+	Threads int
+	Repetitions int
+	Duration int
+	Stage int
+	Assert GoltAssert
 }
 
 type GoltAssert struct {
-	Timeout int `json:"timeout"`
-	Status int `json:"status"`
-	Headers struct {} `json:"headers"`
-	Body string `json:"body"`
+	Timeout int
+	Status int
+	Headers struct {}
+	Body string
 }
 
-func ParseInputFile(filename string) (Golt, error) {
+func ParseInputFile(filename string) (Golts, error) {
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return Golt{}, err
+		return Golts{}, err
 	}
 
 	switch filepath.Ext(filename) {
 		case ".json":
-			golt, err := jsonToStruct(file)
-			return golt, err
+			return jsonToStruct(file)
 		case ".yaml":
-			return Golt{}, errors.New("We're dealing with YAML, but it's not yet implemented. Sorry !")
+			return yamlToStruct(file)
 		default:
-			return Golt{}, errors.New("Unknown file type, exiting")
+			return Golts{}, errors.New("Unknown file type, exiting")
 	}
 }
 
-func jsonToStruct(file []byte) (Golt, error) {
-	var golt Golt
+func jsonToStruct(file []byte) (Golts, error) {
+	var golt Golts
 	err := json.Unmarshal(file, &golt)
+	return golt, err
+}
+
+func yamlToStruct(file []byte) (Golts, error) {
+	var golt Golts
+	err := yaml.Unmarshal(file, &golt)
 	return golt, err
 }

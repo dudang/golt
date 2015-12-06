@@ -13,9 +13,9 @@ var stageWaitGroup sync.WaitGroup
 
 var httpClient = &http.Client{}
 
-func ExecuteGoltTest(goltTest parser.Golt) {
+func ExecuteGoltTest(goltTest parser.Golts) {
 	m := generateGoltMap(goltTest)
-	
+
 	var keys []int
 	for k := range m {
 		keys = append(keys, k)
@@ -27,7 +27,7 @@ func ExecuteGoltTest(goltTest parser.Golt) {
 	}
 }
 
-func executeStage(stage []parser.GoltJson) {
+func executeStage(stage []parser.GoltItem) {
 	stageWaitGroup.Add(len(stage))
 	for i:= 0; i < len(stage); i++ {
 		go executeElement(stage[i])
@@ -35,7 +35,7 @@ func executeStage(stage []parser.GoltJson) {
 	stageWaitGroup.Wait()
 }
 
-func executeElement(element parser.GoltJson) {
+func executeElement(element parser.GoltItem) {
 	internalWaitGroup.Add(element.Threads)
 	for i:= 0; i < element.Threads; i++ {
 		go executeHttpRequest(element)
@@ -44,7 +44,7 @@ func executeElement(element parser.GoltJson) {
 	stageWaitGroup.Done()
 }
 
-func executeHttpRequest(element parser.GoltJson) {
+func executeHttpRequest(element parser.GoltItem) {
 	for i := 1; i <= element.Repetitions; i++ {
 		payload := []byte(element.Payload)
 		req, err := http.NewRequest(element.Method, element.URL, bytes.NewBuffer(payload))
