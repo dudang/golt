@@ -30,6 +30,8 @@ type GoltAssert struct {
 	Body string
 }
 
+type convert func([]byte, interface{}) error
+
 func ParseInputFile(filename string) (Golts, error) {
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -38,22 +40,16 @@ func ParseInputFile(filename string) (Golts, error) {
 
 	switch filepath.Ext(filename) {
 		case ".json":
-			return jsonToStruct(file)
+			return convertToStruct(json.Unmarshal, file)
 		case ".yaml":
-			return yamlToStruct(file)
+			return convertToStruct(yaml.Unmarshal, file)
 		default:
 			return Golts{}, errors.New("Unknown file type, exiting")
 	}
 }
 
-func jsonToStruct(file []byte) (Golts, error) {
+func convertToStruct(convertFunction convert, file []byte) (Golts, error) {
 	var golt Golts
-	err := json.Unmarshal(file, &golt)
-	return golt, err
-}
-
-func yamlToStruct(file []byte) (Golts, error) {
-	var golt Golts
-	err := yaml.Unmarshal(file, &golt)
+	err := convertFunction(file, &golt)
 	return golt, err
 }

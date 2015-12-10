@@ -67,27 +67,23 @@ func generateHttpClient(item parser.GoltItem) *http.Client {
 func executeHttpRequest(item parser.GoltItem, httpClient *http.Client) {
 	for i := 1; i <= item.Repetitions; i++ {
 		payload := []byte(item.Payload)
-		req, err := http.NewRequest(item.Method, item.URL, bytes.NewBuffer(payload))
 
+		req, err := http.NewRequest(item.Method, item.URL, bytes.NewBuffer(payload))
 		resp, err := httpClient.Do(req)
+
+		if resp != nil {
+			defer resp.Body.Close()
+		}
 
 		var msg string
 		if err != nil {
-			msg = fmt.Sprintf("[%s] Stage: %d Repetitions: %d Message: %v\n",
-				time.Now().Format(dateFormat),
-				item.Stage,
-				i,
-				err)
+			// TODO: Make a custom struct for log messages
+			msg = fmt.Sprintf("[%s] Stage: %d Repetitions: %d Message: %v\n", time.Now().Format(dateFormat), item.Stage, i, err)
 		} else {
-			defer resp.Body.Close()
 			isSuccess := isCallSuccessful(item.Assert, resp)
-			msg = fmt.Sprintf("[%s] Stage: %d Repetitions: %d  Status Code: %d Success: %t\n",
-				time.Now().Format(dateFormat),
-				item.Stage,
-				i,
-				resp.StatusCode,
-				isSuccess)
+			msg = fmt.Sprintf("[%s] Stage: %d Repetitions: %d  Status Code: %d Success: %t\n", time.Now().Format(dateFormat), item.Stage, i, resp.StatusCode, isSuccess)
 		}
+
 		logger.Log([]byte(msg))
 	}
 	internalWaitGroup.Done()
