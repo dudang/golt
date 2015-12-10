@@ -65,10 +65,9 @@ func generateHttpClient(item parser.GoltItem) *http.Client {
 }
 
 func executeHttpRequest(item parser.GoltItem, httpClient *http.Client) {
+	payload := []byte(item.Payload)
+	req, _ := http.NewRequest(item.Method, item.URL, bytes.NewBuffer(payload))
 	for i := 1; i <= item.Repetitions; i++ {
-		payload := []byte(item.Payload)
-
-		req, err := http.NewRequest(item.Method, item.URL, bytes.NewBuffer(payload))
 		resp, err := httpClient.Do(req)
 
 		if resp != nil {
