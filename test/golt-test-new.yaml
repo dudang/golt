@@ -1,0 +1,32 @@
+  headers: "Authorization: basic"
+  golt: 
+    - 
+      threads: 10
+      repetitions: 5
+      stage: 1
+      groupType: "sequential"
+      requests: 
+        - 
+          url: "http: //www.google.com"
+          method: "GET"
+          assert: 
+            timeout: 1000
+            status: 200
+        - 
+          url: "http: //www.google.com"
+          method: "POST"
+          payload: "{something}"
+          assert: 
+            timeout: 1000
+            status: 200
+    - 
+      threads: 10
+      repetitions: 5
+      stage: 1
+      requests: 
+        - 
+          url: "http: //www.google.com"
+          method: "GET"
+          assert: 
+            timeout: 1000
+            status: 200
