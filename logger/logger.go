@@ -1,34 +1,25 @@
 package logger
 
 import (
-	"time"
 	"fmt"
+	"os"
+	"log"
 )
 
-// TODO: Make this parameterizable
-const workerCount = 4
-var channel = make(chan []byte, 1024)
-var workers = make([]*Worker, workerCount)
+var logFile *os.File
 
-// TODO: We need to merge the log files after
 func init() {
-	for i := 0; i < workerCount; i++ {
-		workers[i] = NewWorker(i)
-		go workers[i].Work(channel)
+	logFile, err := os.OpenFile("golt.log", os.O_TRUNC | os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+	if err != nil {
+		fmt.Printf("error opening file: %v", err)
 	}
+	log.SetOutput(logFile)
 }
 
 func Log(event []byte) {
-	select {
-		case channel <- event:
-		case <- time.After(5 * time.Second):
-			fmt.Println("Message hanged for more than 5 seconds, lost message")
-			fmt.Printf("%s", event)
-	}
+	log.Printf("%s\n", event)
 }
 
-func Flush() {
-	for _, worker := range workers {
-		worker.Save()
-	}
+func Finish() {
+	logFile.Close()
 }

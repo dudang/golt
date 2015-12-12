@@ -1,6 +1,5 @@
 package runner
 import (
-	"time"
 	"fmt"
 	"sync"
 	"bytes"
@@ -10,7 +9,6 @@ import (
 	"github.com/dudang/golt/logger"
 )
 
-const dateFormat = "2006-01-02 15:04:05"
 const parallelGroup = "parallel"
 
 var stageWaitGroup sync.WaitGroup
@@ -29,8 +27,7 @@ func ExecuteGoltTest(goltTest parser.Golts) {
 	for _, k := range keys {
 		executeStage(m[k])
 	}
-	// We need to flush the remaining messages still in buffer after the test is over
-	logger.Flush()
+	logger.Finish()
 }
 // FIXME: The three following functions are very repetitive. Find a way to clean it
 func executeStage(stage []parser.GoltThreadGroup) {
@@ -101,10 +98,10 @@ func executeHttpRequests(httpRequest parser.GoltRequest, repetitions int, httpCl
 		var msg string
 		if err != nil {
 			// TODO: Make a custom struct for log messages
-			msg = fmt.Sprintf("[%s] Stage: %d Repetitions: %d Message: %v\n", time.Now().Format(dateFormat), stage, i, err)
+			msg = fmt.Sprintf("Stage: %d Repetitions: %d Message: %v Success: %t", stage, i, err, false)
 		} else {
 			isSuccess := isCallSuccessful(httpRequest.Assert, resp)
-			msg = fmt.Sprintf("[%s] Stage: %d Repetitions: %d  Status Code: %d Success: %t\n", time.Now().Format(dateFormat), stage, i, resp.StatusCode, isSuccess)
+			msg = fmt.Sprintf("Stage: %d Repetitions: %d  Status Code: %d Success: %t", stage, i, resp.StatusCode, isSuccess)
 		}
 
 		logger.Log([]byte(msg))
