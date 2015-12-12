@@ -2,9 +2,9 @@
 	"golt": [
 	{
 		"threads": 10,
-		"repetitions": 5,
+		"repetitions": 3,
 		"stage": 1,
-		"type": "sequential",
+		"type": "parallel",
 		"requests": [
 		{
 			"url": "http://www.google.com",
@@ -26,9 +26,16 @@
 	},
 	{
 		"threads": 10,
-		"repetitions": 5,
+		"repetitions": 3,
 		"stage": 2,
 		"requests": [{
+			"url": "http://www.google.com",
+			"method": "GET",
+			"assert": {
+				"timeout": 1000,
+				"status": 200
+			}
+		},{
 			"url": "http://www.google.com",
 			"method": "GET",
 			"assert": {

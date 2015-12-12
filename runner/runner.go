@@ -15,6 +15,7 @@ const parallelGroup = "parallel"
 
 var stageWaitGroup sync.WaitGroup
 var threadWaitGroup sync.WaitGroup
+var requestsWaitGroup sync.WaitGroup
 
 func ExecuteGoltTest(goltTest parser.Golts) {
 	m := generateGoltMap(goltTest)
@@ -58,8 +59,14 @@ func executeRequests(threadGroup parser.GoltThreadGroup, httpClient *http.Client
 			executeHttpRequests(request, threadGroup.Repetitions, httpClient, threadGroup.Stage)
 		}
 		threadWaitGroup.Done()
+	} else {
+		requestsWaitGroup.Add(len(threadGroup.Requests))
+		for _, request := range threadGroup.Requests {
+			go executeParallelRequests(request, threadGroup.Repetitions, httpClient, threadGroup.Stage)
+		}
+		requestsWaitGroup.Wait()
+		threadWaitGroup.Done()
 	}
-	// TODO: Handle the parallel thread groups
 }
 
 
@@ -74,6 +81,11 @@ func generateHttpClient(threadGroup parser.GoltThreadGroup) *http.Client {
 		httpClient = &http.Client{}
 	}*/
 	return &http.Client{}
+}
+
+func executeParallelRequests(httpRequest parser.GoltRequest, repetitions int, httpClient *http.Client, stage int) {
+	executeHttpRequests(httpRequest, repetitions, httpClient, stage)
+	requestsWaitGroup.Done()
 }
 
 func executeHttpRequests(httpRequest parser.GoltRequest, repetitions int, httpClient *http.Client, stage int) {
