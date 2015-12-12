@@ -13,25 +13,25 @@ type Golts struct {
 }
 
 type GoltThreadGroup struct {
-	Threads int
+	Threads     int
 	Repetitions int
-	Stage int
-	Type string
-	Requests []GoltRequest
+	Stage       int
+	Type        string
+	Requests    []GoltRequest
 }
 
 type GoltRequest struct {
-	URL string
-	Method string
+	URL     string
+	Method  string
 	Payload string
-	Assert GoltAssert
+	Assert  GoltAssert
 }
 
 type GoltAssert struct {
 	Timeout int
-	Status int
-	Headers struct {}
-	Body string
+	Status  int
+	Type    string
+	Body    string
 }
 
 type convert func([]byte, interface{}) error
@@ -43,12 +43,12 @@ func ParseInputFile(filename string) (Golts, error) {
 	}
 
 	switch filepath.Ext(filename) {
-		case ".json":
-			return convertToStruct(json.Unmarshal, file)
-		case ".yaml":
-			return convertToStruct(yaml.Unmarshal, file)
-		default:
-			return Golts{}, errors.New("Unknown file type, exiting")
+	case ".json":
+		return convertToStruct(json.Unmarshal, file)
+	case ".yaml":
+		return convertToStruct(yaml.Unmarshal, file)
+	default:
+		return Golts{}, errors.New("Unknown file type, exiting")
 	}
 }
 

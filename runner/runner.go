@@ -15,7 +15,7 @@ var stageWaitGroup sync.WaitGroup
 var threadWaitGroup sync.WaitGroup
 var requestsWaitGroup sync.WaitGroup
 
-func ExecuteGoltTest(goltTest parser.Golts) {
+func ExecuteGoltTest(goltTest parser.Golts, logFile string) {
 	m := generateGoltMap(goltTest)
 
 	var keys []int
@@ -24,6 +24,7 @@ func ExecuteGoltTest(goltTest parser.Golts) {
 	}
 	sort.Ints(keys)
 
+	logger.SetOutputFile(logFile)
 	for _, k := range keys {
 		executeStage(m[k])
 	}
@@ -32,7 +33,7 @@ func ExecuteGoltTest(goltTest parser.Golts) {
 // FIXME: The three following functions are very repetitive. Find a way to clean it
 func executeStage(stage []parser.GoltThreadGroup) {
 	stageWaitGroup.Add(len(stage))
-	for _, item := range stage{
+	for _, item := range stage {
 		httpClient := generateHttpClient(item)
 		go executeThreadGroup(item, httpClient)
 	}
@@ -42,7 +43,7 @@ func executeStage(stage []parser.GoltThreadGroup) {
 func executeThreadGroup(threadGroup parser.GoltThreadGroup, httpClient *http.Client) {
 	threadWaitGroup.Add(threadGroup.Threads)
 
-	for i:= 0; i < threadGroup.Threads; i++ {
+	for i := 0; i < threadGroup.Threads; i++ {
 		go executeRequests(threadGroup, httpClient)
 	}
 
@@ -108,7 +109,14 @@ func executeHttpRequests(httpRequest parser.GoltRequest, repetitions int, httpCl
 	}
 }
 
-func isCallSuccessful(assert parser.GoltAssert, response *http.Response) bool{
-	// TODO: Finish this method to validate more than just response code
-	return assert.Status == response.StatusCode
+func isCallSuccessful(assert parser.GoltAssert, response *http.Response) bool {
+	var isCallSuccessful bool
+	isContentTypeSuccessful := true
+	isStatusCodeSuccessful := assert.Status == response.StatusCode
+	if assert.Type != "" {
+		isContentTypeSuccessful = assert.Type == response.Header.Get("content-type")
+	}
+	isCallSuccessful = isStatusCodeSuccessful && isContentTypeSuccessful
+	// TODO: Finish this method to validate the whole assert
+	return isCallSuccessful
 }

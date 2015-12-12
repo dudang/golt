@@ -11,6 +11,7 @@
           assert:
             timeout: 1000
             status: 200
+            type: "text/html; charset=ISO-8859-1"
         -
           url: "http://www.google.com"
           method: "POST"

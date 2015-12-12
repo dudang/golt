@@ -9,6 +9,7 @@ import (
 )
 
 var filename string
+var logFile string
 var version = "0.1"
 
 func main() {
@@ -25,16 +26,27 @@ func main() {
 			Usage: "full path to the load test file",
 			Destination: &filename,
 		},
+		cli.StringFlag{
+			Name: "log, l",
+			Value: "golt.log",
+			Usage: "full path the the log file",
+			Destination: &logFile,
+		},
 	}
 
 	app.Action = func(c *cli.Context) {
+		fmt.Println("Started Golt")
+		fmt.Println("Parsing input file...")
 		golt, err := parser.ParseInputFile(filename)
 		if err != nil {
 			fmt.Println("Error occured during parsing of the file:")
-			fmt.Printf("%v\n",   err)
+			fmt.Printf("%v\n", err)
 			os.Exit(1)
 		}
-		runner.ExecuteGoltTest(golt)
+		fmt.Println("Parsing completed")
+		fmt.Println("Executing test...")
+		runner.ExecuteGoltTest(golt, logFile)
+		fmt.Println("Test completed, see results in the log file")
 	}
 
 	app.Run(os.Args)
