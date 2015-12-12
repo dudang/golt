@@ -9,17 +9,21 @@ import (
 )
 
 type Golts struct {
-	Golt []GoltItem
+	Golt []GoltThreadGroup
 }
 
-type GoltItem struct {
+type GoltThreadGroup struct {
+	Threads int
+	Repetitions int
+	Stage int
+	Type string
+	Requests []GoltRequest
+}
+
+type GoltRequest struct {
 	URL string
 	Method string
 	Payload string
-	Threads int
-	Repetitions int
-	Duration int
-	Stage int
 	Assert GoltAssert
 }
 
