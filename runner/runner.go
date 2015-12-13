@@ -125,7 +125,7 @@ func isCallSuccessful(assert parser.GoltAssert, response *http.Response) bool {
 		if err != nil {
 			isBodySuccessful = false
 		} else {
-			isBodySuccessful = assert.Body == body
+			isBodySuccessful = assert.Body == string(body)
 		}
 	}
 
