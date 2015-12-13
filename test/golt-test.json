@@ -11,7 +11,8 @@
 			"method": "GET",
 			"assert": {
 				"timeout": 1000,
-				"status": 200
+				"status": 200,
+                "type": "text/html; charset=ISO-8859-1"
 			}
 		},
 		{
@@ -20,7 +21,8 @@
 			"payload": "{something}",
 			"assert": {
 				"timeout": 1000,
-				"status": 200
+				"status": 200,
+				"body": "<html>hey</html>"
 			}
 		}]
 	},

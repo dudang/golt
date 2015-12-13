@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"github.com/dudang/golt/parser"
 	"github.com/dudang/golt/logger"
+	"io/ioutil"
 )
 
 const parallelGroup = "parallel"
@@ -112,11 +113,18 @@ func executeHttpRequests(httpRequest parser.GoltRequest, repetitions int, httpCl
 func isCallSuccessful(assert parser.GoltAssert, response *http.Response) bool {
 	var isCallSuccessful bool
 	isContentTypeSuccessful := true
+	isBodySuccessful := true
 	isStatusCodeSuccessful := assert.Status == response.StatusCode
+
 	if assert.Type != "" {
 		isContentTypeSuccessful = assert.Type == response.Header.Get("content-type")
 	}
-	isCallSuccessful = isStatusCodeSuccessful && isContentTypeSuccessful
+
+	if assert.Body != "" {
+		isBodySuccessful = assert.Body == ioutil.ReadAll(response.Body)
+	}
+
+	isCallSuccessful = isStatusCodeSuccessful && isContentTypeSuccessful && isBodySuccessful
 	// TODO: Finish this method to validate the whole assert
 	return isCallSuccessful
 }

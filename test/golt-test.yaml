@@ -19,6 +19,7 @@
           assert:
             timeout: 1000
             status: 200
+            body: "<html>hey</html>"
     -
       threads: 10
       repetitions: 3
