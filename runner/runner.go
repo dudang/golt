@@ -1,13 +1,14 @@
 package runner
 import (
-	"fmt"
 	"sync"
 	"bytes"
 	"sort"
 	"net/http"
 	"github.com/dudang/golt/parser"
-	"github.com/dudang/golt/logger"
+	logger "github.com/dudang/golt/logger"
 	"io/ioutil"
+	"time"
+	"fmt"
 )
 
 const parallelGroup = "parallel"
@@ -91,22 +92,35 @@ func executeHttpRequests(httpRequest parser.GoltRequest, repetitions int, httpCl
 	for i := 1; i <= repetitions; i++ {
 		payload := []byte(httpRequest.Payload)
 		req, _ := http.NewRequest(httpRequest.Method, httpRequest.URL, bytes.NewBuffer(payload))
+
+		start := time.Now()
 		resp, err := httpClient.Do(req)
+		elapsed := time.Since(start)
 
 		if resp != nil {
 			defer resp.Body.Close()
 		}
 
-		var msg string
+		var msg logger.LogMessage
 		if err != nil {
-			// TODO: Make a custom struct for log messages
-			msg = fmt.Sprintf("Stage: %d Repetitions: %d Message: %v Success: %t", stage, i, err, false)
+			errorMsg := fmt.Sprintf("%v", err)
+			msg = logger.LogMessage{Stage: stage,
+				Repetition: i,
+				ErrorMessage: errorMsg,
+				Status: 0,
+				Success: false,
+				Duration: elapsed}
 		} else {
 			isSuccess := isCallSuccessful(httpRequest.Assert, resp)
-			msg = fmt.Sprintf("Stage: %d Repetitions: %d  Status Code: %d Success: %t", stage, i, resp.StatusCode, isSuccess)
+			msg = logger.LogMessage{Stage: stage,
+				Repetition: i,
+				ErrorMessage: "N/A",
+				Status: resp.StatusCode,
+				Success: isSuccess,
+				Duration: elapsed}
 		}
 
-		logger.Log([]byte(msg))
+		logger.Log(msg)
 	}
 }
 

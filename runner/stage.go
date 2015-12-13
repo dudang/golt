@@ -12,6 +12,7 @@ func generateGoltMap(goltTest parser.Golts) map[int][]parser.GoltThreadGroup {
 			m[element.Stage] = []parser.GoltThreadGroup{element}
 		} else {
 			m[element.Stage] = append(array, element)
+
 		}
 	}
 	return m
