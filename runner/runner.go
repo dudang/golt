@@ -121,7 +121,12 @@ func isCallSuccessful(assert parser.GoltAssert, response *http.Response) bool {
 	}
 
 	if assert.Body != "" {
-		isBodySuccessful = assert.Body == ioutil.ReadAll(response.Body)
+		body, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			isBodySuccessful = false
+		} else {
+			isBodySuccessful = assert.Body == body
+		}
 	}
 
 	isCallSuccessful = isStatusCodeSuccessful && isContentTypeSuccessful && isBodySuccessful
