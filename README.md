@@ -5,6 +5,8 @@
 # Golt
 Golt is a load testing tool written in Go currently supporting only HTTP requests.
 
+The goal is to support complex flow of requests replicating a parallel or sequential traffic.
+
 ```
 $ ./golt -f <path-to-test-file> -l <path-to-log-file>
 ```
