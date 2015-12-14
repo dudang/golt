@@ -2,10 +2,10 @@ package main
 
 import (
 	"os"
+	"fmt"
 	"github.com/codegangsta/cli"
 	"github.com/dudang/golt/parser"
 	"github.com/dudang/golt/runner"
-	"fmt"
 )
 
 var filename string

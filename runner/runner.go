@@ -16,6 +16,7 @@ const parallelGroup = "parallel"
 var stageWaitGroup sync.WaitGroup
 var threadWaitGroup sync.WaitGroup
 var requestsWaitGroup sync.WaitGroup
+var channel = make(chan []byte, 1024)
 
 func ExecuteGoltTest(goltTest parser.Golts, logFile string) {
 	m := generateGoltMap(goltTest)
@@ -27,9 +28,12 @@ func ExecuteGoltTest(goltTest parser.Golts, logFile string) {
 	sort.Ints(keys)
 
 	logger.SetOutputFile(logFile)
+	go Watch(channel)
 	for _, k := range keys {
 		executeStage(m[k])
 	}
+	throughput := CalculateThroughput()
+	fmt.Printf("Average Throughput: %f R/S\n", throughput)
 	logger.Finish()
 }
 // FIXME: The three following functions are very repetitive. Find a way to clean it
@@ -80,7 +84,10 @@ func generateHttpClient(threadGroup parser.GoltThreadGroup) *http.Client {
 	} else {
 		httpClient = &http.Client{}
 	}*/
-	return &http.Client{}
+	// Default timeout of 30 seconds for HTTP calls to avoid hung threads
+	return &http.Client{
+		Timeout: time.Duration(time.Second * 30),
+	}
 }
 
 func executeParallelRequests(httpRequest parser.GoltRequest, repetitions int, httpClient *http.Client, stage int) {
@@ -93,6 +100,8 @@ func executeHttpRequests(httpRequest parser.GoltRequest, repetitions int, httpCl
 		payload := []byte(httpRequest.Payload)
 		req, _ := http.NewRequest(httpRequest.Method, httpRequest.URL, bytes.NewBuffer(payload))
 
+		sentRequest := []byte("sent")
+		channel <- sentRequest
 		start := time.Now()
 		resp, err := httpClient.Do(req)
 		elapsed := time.Since(start)
