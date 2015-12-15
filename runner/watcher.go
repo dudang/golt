@@ -7,6 +7,7 @@ import (
 var requestSent int64
 var start time.Time
 
+// TODO: Calculate throughput during the test, not just at the end
 func Watch(channel chan []byte) {
 	requestSent = 0
 	start = time.Now()

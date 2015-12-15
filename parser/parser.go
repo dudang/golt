@@ -24,7 +24,9 @@ type GoltRequest struct {
 	URL     string
 	Method  string
 	Payload string
+	Headers string
 	Assert  GoltAssert
+	Extract GoltExtractor
 }
 
 type GoltAssert struct {
@@ -32,6 +34,12 @@ type GoltAssert struct {
 	Status  int
 	Type    string
 	Body    string
+}
+
+type GoltExtractor struct {
+	Var   string
+	Field string
+	Regex string
 }
 
 type convert func([]byte, interface{}) error

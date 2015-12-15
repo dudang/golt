@@ -19,14 +19,14 @@ Define your test plan with a JSON or YAML file and run golt!
     - Amount of threads
     - Amount of repetitions of requests
     - Stage of the group
-    - Type of group
     - An array of requests to be executed
     
 - Define you first array of requests:
     - URL
     - Method
     - Payload
-    - Assertion of the response containing status code, body, timeout.
+    - Assertion of the response containing status code, timeout.
+    - Extraction
 
 ## What is a stage ?
 A stage in a thread group defines at which point this thread group will be executed.
@@ -34,8 +34,19 @@ A stage in a thread group defines at which point this thread group will be execu
 - If 3 thread groups are defined with stage 1, they will all be executed in parallel.
 - If a fourth thread groups is defined with stage 2, once the three first groups are finished, it will be executed
 
-## What are type of groups ?
-### "sequential"
-In a "sequential" thread group, the array of requests in this group will be executed sequentially from top to bottom
-### "parallel"
-In a "parallel" thread group, the array of requests in this group will be executed in parallel.
+## What is an extraction ?
+An extraction is a way to dynamically get results from the response and inject it in the further requests.
+
+It needs the following fields:
+
+- **var**: The variable name to store the result into
+- **field**: Either "headers" or "body". Field to search into for a value
+- **regex**: Any regular expression to find a dynamic value
+
+Once the value is extracted, it's possible to use it in the further requests. Example below:
+
+- var: "OAUTH_TOKEN"
+- field: "headers"
+- regex: "bearer (.*)?"
+
+The variable $(OAUTH_TOKEN) can be injected in further requests afterwards
