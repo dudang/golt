@@ -34,13 +34,16 @@ func ExecuteGoltTest(goltTest parser.Golts, logFile string) {
 	fmt.Printf("Average Throughput: %f R/S\n", throughput)
 	logger.Finish()
 }
-// FIXME: The three following functions are very repetitive. Find a way to clean it
+
+// FIXME: The two following functions are very repetitive. Find a way to clean it
 func executeStage(stage []parser.GoltThreadGroup) {
 	stageWaitGroup.Add(len(stage))
+
 	for _, item := range stage {
 		httpClient := generateHttpClient(item)
 		go executeThreadGroup(item, httpClient)
 	}
+
 	stageWaitGroup.Wait()
 }
 
@@ -48,16 +51,14 @@ func executeThreadGroup(threadGroup parser.GoltThreadGroup, httpClient *http.Cli
 	threadWaitGroup.Add(threadGroup.Threads)
 
 	for i := 0; i < threadGroup.Threads; i++ {
-		go executeRequests(threadGroup, httpClient)
+		go func() {
+			executeHttpRequests(threadGroup, httpClient)
+			threadWaitGroup.Done()
+		}()
 	}
 
 	threadWaitGroup.Wait()
 	stageWaitGroup.Done()
-}
-
-func executeRequests(threadGroup parser.GoltThreadGroup, httpClient *http.Client) {
-	executeHttpRequests(threadGroup, httpClient)
-	threadWaitGroup.Done()
 }
 
 func generateHttpClient(threadGroup parser.GoltThreadGroup) *http.Client {

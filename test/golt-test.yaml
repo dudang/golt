@@ -34,7 +34,8 @@ golt:
       -
         url: "http://www.google.com"
         method: "POST"
-        payload: "$(CONTENT_TYPE)"
+        headers:
+         content-type: "$(CONTENT_TYPE)"
         assert:
           timeout: 1000
           status: 200

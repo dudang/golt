@@ -13,6 +13,10 @@ import (
 	"github.com/dudang/golt/parser"
 )
 
+
+const regexForVariable = "\\$\\(.*?\\)"
+var r, _ = regexp.Compile(regexForVariable)
+
 func executeHttpRequests(threadGroup parser.GoltThreadGroup, httpClient *http.Client) {
 	for i := 1; i <= threadGroup.Repetitions; i++ {
 		executeRequestsSequence(threadGroup.Requests, httpClient, threadGroup.Stage, i)
@@ -21,20 +25,25 @@ func executeHttpRequests(threadGroup parser.GoltThreadGroup, httpClient *http.Cl
 
 // TODO: Refactor here, starting to have too many responsibilities for a single method
 func executeRequestsSequence(httpRequests []parser.GoltRequest, httpClient *http.Client, stage int, repetition int) {
+	// TODO: By defining the map here, it's local to the thread, maybe we want something else
 	extractorMap := make(map[string]string)
+	extractionWasDone := false
 
 	for _, request := range httpRequests {
+		var req *http.Request
+		if extractionWasDone {
+			req = buildRegexRequest(request, extractorMap)
+		} else {
+			req = buildRequest(request)
+		}
 
-		payloadString := generatePayload(request, extractorMap)
+		// Notify the watcher that the request is sent for throughput duties
+		func() {
+			sentRequest := []byte("sent")
+			channel <- sentRequest
+		}()
 
-		payload := []byte(payloadString)
-		req, _ := http.NewRequest(request.Method, request.URL, bytes.NewBuffer(payload))
-
-		// TODO: need a generate header function to inject it inside the request
-
-		sentRequest := []byte("sent")
-		channel <- sentRequest
-
+		// Send request and calculate time
 		start := time.Now()
 		resp, err := httpClient.Do(req)
 		elapsed := time.Since(start)
@@ -43,53 +52,108 @@ func executeRequestsSequence(httpRequests []parser.GoltRequest, httpClient *http
 			defer resp.Body.Close()
 		}
 
-		var msg logger.LogMessage
-		if err != nil {
-			errorMsg := fmt.Sprintf("%v", err)
-			msg = logger.LogMessage{Stage: stage,
-				Repetition: repetition,
-				ErrorMessage: errorMsg,
-				Status: 0,
-				Success: false,
-				Duration: elapsed}
-		} else {
-			isSuccess := isCallSuccessful(request.Assert, resp)
-			msg = logger.LogMessage{Stage: stage,
-				Repetition: repetition,
-				ErrorMessage: "N/A",
-				Status: resp.StatusCode,
-				Success: isSuccess,
-				Duration: elapsed}
-		}
-		logger.Log(msg)
+		// Log result
+		logResult(request, resp, err, stage, repetition, elapsed)
 
-		// Check the Regex and store in Map
-		// FIXME: Weak check
-		if request.Extract.Field != "" {
+		// Check if we are extracting anything and store it in a Map
+		regexIsDefined := request.Extract.Field != "" && request.Extract.Regex != "" && request.Extract.Var != ""
+		if regexIsDefined {
 			value := executeExtraction(request.Extract, resp)
 			if value != "" {
 				extractorMap[request.Extract.Var] = value
+				extractionWasDone = true
 			}
 		}
 	}
 }
 
+func buildRegexRequest(request parser.GoltRequest, extractorMap map[string]string) *http.Request{
+	payloadString := generatePayload(request, extractorMap)
+	payload := []byte(payloadString)
+
+	req, _ := http.NewRequest(request.Method, request.URL, bytes.NewBuffer(payload))
+
+	headers := generateHeaders(request, extractorMap)
+	for k, v := range headers {
+		req.Header.Set(k, *v)
+	}
+	return req
+}
+
+func buildRequest(request parser.GoltRequest) *http.Request {
+	payload := []byte(request.Payload)
+	req, _ := http.NewRequest(request.Method, request.URL, bytes.NewBuffer(payload))
+	for k, v := range request.Headers {
+		req.Header.Set(k, *v)
+	}
+	return req
+}
+
 func generatePayload(request parser.GoltRequest, extractorMap map[string]string) (string) {
-	regexForVariables := "\\$\\(.*?\\)"
-	r, _ := regexp.Compile(regexForVariables)
-
-
 	if r.MatchString(request.Payload) {
-		for _, foundMatch := range r.FindAllString(request.Payload, -1) {
+		// We are passing the pointer of the Payload to modify it's value
+		replaceRegex(r, &request.Payload, extractorMap)
+	}
+	return request.Payload
+}
+
+func generateHeaders(request parser.GoltRequest, extractorMap map[string]string) map[string]*string {
+	for k := range request.Headers {
+		// We are passing a pointer of the value in the map to replace it's value
+		replaceRegex(r, request.Headers[k], extractorMap)
+	}
+	return request.Headers
+}
+
+func replaceRegex(regex *regexp.Regexp, value *string, extractorMap map[string]string) {
+	/*
+	Given a specific regular expression, a pointer to a string and a map of stored variable
+	This method will have the side effect of changing the value pointer by the string if the regex is matching
+	*/
+	if regex.MatchString(*value) {
+		for _, foundMatch := range regex.FindAllString(*value, -1) {
 			mapKey := foundMatch[2:len(foundMatch)-1]
-			value := extractorMap[mapKey]
-			request.Payload = strings.Replace(request.Payload, foundMatch, value, -1)
+			extractedValue := extractorMap[mapKey]
+			*value = strings.Replace(*value, foundMatch, extractedValue, -1)
 		}
 	}
+}
 
-	// TODO: handle headers to return a map
+// TODO: Too many parameters on this method, to refactor
+func logResult(request parser.GoltRequest, resp *http.Response, err error, stage int, repetition int, elapsed time.Duration) {
+	var msg logger.LogMessage
+	if err != nil {
+		errorMsg := fmt.Sprintf("%v", err)
+		msg = logger.LogMessage{Stage: stage,
+			Repetition: repetition,
+			ErrorMessage: errorMsg,
+			Status: 0,
+			Success: false,
+			Duration: elapsed}
+	} else {
+		isSuccess := isCallSuccessful(request.Assert, resp)
+		msg = logger.LogMessage{Stage: stage,
+			Repetition: repetition,
+			ErrorMessage: "N/A",
+			Status: resp.StatusCode,
+			Success: isSuccess,
+			Duration: elapsed}
+	}
+	logger.Log(msg)
+}
 
-	return request.Payload
+func isCallSuccessful(assert parser.GoltAssert, response *http.Response) bool {
+	var isCallSuccessful bool
+	isContentTypeSuccessful := true
+	isBodySuccessful := true
+	isStatusCodeSuccessful := assert.Status == response.StatusCode
+
+	if assert.Type != "" {
+		isContentTypeSuccessful = assert.Type == response.Header.Get("content-type")
+	}
+
+	isCallSuccessful = isStatusCodeSuccessful && isContentTypeSuccessful && isBodySuccessful
+	return isCallSuccessful
 }
 
 func executeExtraction(extractor parser.GoltExtractor, response *http.Response) string{
@@ -107,26 +171,9 @@ func executeExtraction(extractor parser.GoltExtractor, response *http.Response) 
 		}
 	case "body":
 		body, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			return ""
-		}
-		if r.MatchString(string(body)) {
+		if r.MatchString(string(body)) && err == nil {
 			return r.FindString(string(body))
 		}
 	}
 	return ""
-}
-
-func isCallSuccessful(assert parser.GoltAssert, response *http.Response) bool {
-	var isCallSuccessful bool
-	isContentTypeSuccessful := true
-	isBodySuccessful := true
-	isStatusCodeSuccessful := assert.Status == response.StatusCode
-
-	if assert.Type != "" {
-		isContentTypeSuccessful = assert.Type == response.Header.Get("content-type")
-	}
-
-	isCallSuccessful = isStatusCodeSuccessful && isContentTypeSuccessful && isBodySuccessful
-	return isCallSuccessful
 }

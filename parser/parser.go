@@ -24,7 +24,7 @@ type GoltRequest struct {
 	URL     string
 	Method  string
 	Payload string
-	Headers string
+	Headers map[string] *string
 	Assert  GoltAssert
 	Extract GoltExtractor
 }
