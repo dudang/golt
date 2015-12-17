@@ -90,10 +90,8 @@ func buildRequest(request parser.GoltRequest) *http.Request {
 }
 
 func generatePayload(request parser.GoltRequest, extractorMap map[string]string) (string) {
-	if r.MatchString(request.Payload) {
-		// We are passing the pointer of the Payload to modify it's value
-		replaceRegex(r, &request.Payload, extractorMap)
-	}
+	// We are passing the pointer of the Payload to modify it's value
+	replaceRegex(r, &request.Payload, extractorMap)
 	return request.Payload
 }
 
