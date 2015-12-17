@@ -45,8 +45,8 @@ It needs the following fields:
 
 Once the value is extracted, it's possible to use it in the further requests. Example below:
 
-- var: "OAUTH_TOKEN"
-- field: "headers"
-- regex: "bearer (.*)?"
+- *var*: "OAUTH_TOKEN"
+- *field*: "headers"
+- *regex*: "bearer (.*)?"
 
 The variable $(OAUTH_TOKEN) can be injected in further requests afterwards

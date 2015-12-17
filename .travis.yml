@@ -13,6 +13,7 @@ script:
   - "$HOME/gopath/bin/goveralls -service=travis-ci"
   - go build github.com/dudang/golt
   - go test github.com/dudang/golt/parser
+  - go test github.com/dudang/golt/runner
   
 notifications:
   slack:
