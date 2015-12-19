@@ -10,9 +10,9 @@ var requestDelta int64
 var start time.Time
 var delta time.Duration
 
+// TODO: Parametrize this
 var throughputInterval = 5.0
 
-// TODO: Calculate throughput during the test, not just at the end
 func Watch(channel chan []byte) {
 	requestSent = 0
 	requestDelta = 0

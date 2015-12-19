@@ -3,6 +3,8 @@ package runner
 import (
 	"testing"
 	"fmt"
+	parser "github.com/dudang/golt/parser"
+	"net/http"
 )
 
 const testKey1, testValue1 = "TEST_VALUE_1", "test-string-1"
@@ -24,6 +26,57 @@ func TestReplaceRegex(t *testing.T) {
 	replaceRegex(r, &replaceString2, testingMap)
 	expectedString2 := fmt.Sprintf("This is a test %s to replace the regex %s", testValue2, testValue2)
 	if replaceString2 != expectedString2 {
+		t.Fail()
+	}
+}
+
+func TestIsCallSuccessful(t *testing.T) {
+	assert := parser.GoltAssert{
+		Type: "application/json",
+		Status: 200,
+	}
+
+	var jsonHeaders http.Header
+	jsonHeaders = http.Header{}
+	jsonHeaders.Set("Content-Type", "application/json")
+
+	var htmlHeaders http.Header
+	htmlHeaders = http.Header{}
+	htmlHeaders.Set("Content-Type", "text/html")
+
+	validResponse := &http.Response{
+		StatusCode: 200,
+		Header: jsonHeaders,
+	}
+
+	wrongStatusCodeResponse := &http.Response{
+		StatusCode: 404,
+		Header: jsonHeaders,
+	}
+
+	wrongContentTypeResponse := &http.Response{
+		StatusCode: 200,
+		Header: htmlHeaders,
+	}
+
+	wrongResponse := &http.Response{
+		StatusCode: 404,
+		Header: htmlHeaders,
+	}
+
+	if isCallSuccessful(assert, validResponse) != true {
+		t.Fail()
+	}
+
+	if isCallSuccessful(assert, wrongStatusCodeResponse) == true {
+		t.Fail()
+	}
+
+	if isCallSuccessful(assert, wrongContentTypeResponse) == true {
+		t.Fail()
+	}
+
+	if isCallSuccessful(assert, wrongResponse) == true {
 		t.Fail()
 	}
 }

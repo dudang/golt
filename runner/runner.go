@@ -5,7 +5,7 @@ import (
 	"time"
 	"net/http"
 
-	"github.com/dudang/golt/parser"
+	parser "github.com/dudang/golt/parser"
 	logger "github.com/dudang/golt/logger"
 )
 

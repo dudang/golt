@@ -33,7 +33,6 @@ type GoltAssert struct {
 	Timeout int
 	Status  int
 	Type    string
-	Body    string
 }
 
 type GoltExtractor struct {
