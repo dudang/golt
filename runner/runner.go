@@ -3,7 +3,6 @@ import (
 	"sync"
 	"sort"
 	"time"
-	"fmt"
 	"net/http"
 
 	"github.com/dudang/golt/parser"
@@ -30,8 +29,9 @@ func ExecuteGoltTest(goltTest parser.Golts, logFile string) {
 	for _, k := range keys {
 		executeStage(m[k])
 	}
-	throughput := CalculateThroughput()
-	fmt.Printf("Average Throughput: %f R/S\n", throughput)
+
+	// Output final throughput
+	OutputAverageThroughput()
 	logger.Finish()
 }
 
