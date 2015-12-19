@@ -1,7 +1,7 @@
 golt:
   -
     threads: 10
-    repetitions: 3
+    repetitions: 30
     stage: 1
     requests:
       -
