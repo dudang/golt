@@ -1,12 +1,9 @@
-package runner
+package main
 import (
 	"sync"
 	"sort"
 	"time"
 	"net/http"
-
-	parser "github.com/dudang/golt/parser"
-	logger "github.com/dudang/golt/logger"
 )
 
 const parallelGroup = "parallel"
@@ -15,7 +12,7 @@ var stageWaitGroup sync.WaitGroup
 var threadWaitGroup sync.WaitGroup
 var channel = make(chan []byte, 1024)
 
-func ExecuteGoltTest(goltTest parser.Golts, logFile string) {
+func ExecuteGoltTest(goltTest Golts, logFile string) {
 	m := generateGoltMap(goltTest)
 
 	var keys []int
@@ -24,7 +21,7 @@ func ExecuteGoltTest(goltTest parser.Golts, logFile string) {
 	}
 	sort.Ints(keys)
 
-	logger.SetOutputFile(logFile)
+	SetOutputFile(logFile)
 	go Watch(channel)
 	for _, k := range keys {
 		executeStage(m[k])
@@ -32,11 +29,11 @@ func ExecuteGoltTest(goltTest parser.Golts, logFile string) {
 
 	// Output final throughput
 	OutputAverageThroughput()
-	logger.Finish()
+	Finish()
 }
 
 // FIXME: The two following functions are very repetitive. Find a way to clean it
-func executeStage(stage []parser.GoltThreadGroup) {
+func executeStage(stage []GoltThreadGroup) {
 	stageWaitGroup.Add(len(stage))
 
 	for _, item := range stage {
@@ -47,7 +44,7 @@ func executeStage(stage []parser.GoltThreadGroup) {
 	stageWaitGroup.Wait()
 }
 
-func executeThreadGroup(threadGroup parser.GoltThreadGroup, httpClient *http.Client) {
+func executeThreadGroup(threadGroup GoltThreadGroup, httpClient *http.Client) {
 	threadWaitGroup.Add(threadGroup.Threads)
 
 	for i := 0; i < threadGroup.Threads; i++ {
@@ -61,7 +58,7 @@ func executeThreadGroup(threadGroup parser.GoltThreadGroup, httpClient *http.Cli
 	stageWaitGroup.Done()
 }
 
-func generateHttpClient(threadGroup parser.GoltThreadGroup) *http.Client {
+func generateHttpClient(threadGroup GoltThreadGroup) *http.Client {
 	// TODO: Currently timeout is not supported with the new data model
 	/*var httpClient *http.Client
 	if item.Assert.Timeout > 0 {

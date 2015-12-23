@@ -4,12 +4,10 @@ import (
 	"os"
 	"fmt"
 	"github.com/codegangsta/cli"
-	"github.com/dudang/golt/parser"
-	"github.com/dudang/golt/runner"
 )
 
-var filename string
-var logFile string
+var testFilename string
+var logFilename string
 var version = "0.1"
 
 func main() {
@@ -24,20 +22,20 @@ func main() {
 			Name: "file, f",
 			Value: "golt.json",
 			Usage: "full path to the load test file",
-			Destination: &filename,
+			Destination: &testFilename,
 		},
 		cli.StringFlag{
 			Name: "log, l",
 			Value: "golt.log",
 			Usage: "full path the the log file",
-			Destination: &logFile,
+			Destination: &logFilename,
 		},
 	}
 
 	app.Action = func(c *cli.Context) {
 		fmt.Println("Started Golt")
 		fmt.Println("Parsing input file...")
-		golt, err := parser.ParseInputFile(filename)
+		golt, err := ParseInputFile(testFilename)
 		if err != nil {
 			fmt.Println("Error occured during parsing of the file:")
 			fmt.Printf("%v\n", err)
@@ -45,7 +43,7 @@ func main() {
 		}
 		fmt.Println("Parsing completed")
 		fmt.Println("Executing test...")
-		runner.ExecuteGoltTest(golt, logFile)
+		ExecuteGoltTest(golt, logFilename)
 		fmt.Println("Test completed, see results in the log file")
 	}
 

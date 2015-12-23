@@ -1,11 +1,11 @@
-package parser
+package main
 
 import (
 	"testing"
 )
 
 func TestParseInputFile(t *testing.T) {
-	_, err := ParseInputFile("../test/golt-test.json")
+	_, err := ParseInputFile("test/golt-test.json")
 	if err != nil {
 		t.Fail()
 	}

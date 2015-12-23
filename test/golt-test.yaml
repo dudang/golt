@@ -1,41 +1,9 @@
 golt:
   -
     threads: 10
-    repetitions: 30
-    stage: 1
-    requests:
-      -
-        url: "http://www.google.com"
-        method: "GET"
-        assert:
-          timeout: 1000
-          status: 200
-      -
-        url: "http://www.google.com"
-        method: "GET"
-        assert:
-          timeout: 1000
-          status: 200
-  -
-    threads: 10
     repetitions: 3
     stage: 1
     requests:
       -
         url: "http://www.google.com"
         method: "GET"
-        extract:
-          var: "CONTENT_TYPE"
-          field: "headers"
-          regex: "text/html(.*)[^\"]"
-        assert:
-          timeout: 1000
-          status: 200
-      -
-        url: "http://www.google.com"
-        method: "POST"
-        headers:
-         content-type: "$(CONTENT_TYPE)"
-        assert:
-          timeout: 1000
-          status: 200

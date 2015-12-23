@@ -3,17 +3,15 @@ language: go
 go:
   - 1.5
   
-before_install:
-  - go get github.com/axw/gocov/gocov
+install:
+  - go get golang.org/x/tools/cmd/cover
   - go get github.com/mattn/goveralls
   - go get gopkg.in/yaml.v2
-  - if ! go get github.com/golang/tools/cmd/cover; then go get golang.org/x/tools/cmd/cover; fi
 
 script:
-  - "$HOME/gopath/bin/goveralls -service=travis-ci"
   - go build github.com/dudang/golt
-  - go test github.com/dudang/golt/parser
-  - go test github.com/dudang/golt/runner
+  - go test -v -covermode=count -coverprofile=coverage.out
+  - $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
   
 notifications:
   slack:

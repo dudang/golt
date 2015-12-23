@@ -1,9 +1,8 @@
-package runner
+package main
 
 import (
 	"testing"
 	"fmt"
-	parser "github.com/dudang/golt/parser"
 	"net/http"
 )
 
@@ -31,7 +30,7 @@ func TestReplaceRegex(t *testing.T) {
 }
 
 func TestIsCallSuccessful(t *testing.T) {
-	assert := parser.GoltAssert{
+	assert := GoltAssert{
 		Type: "application/json",
 		Status: 200,
 	}

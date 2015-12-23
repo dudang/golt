@@ -1,4 +1,4 @@
-package runner
+package main
 
 import (
 	"time"
@@ -27,7 +27,7 @@ func Watch(channel chan []byte) {
 		delta = time.Since(start)
 		if delta.Seconds() > timeCounter {
 			throughput := float64(requestDelta)/throughputInterval
-			fmt.Printf("Throughput in the last %.2f seconds: %.2f R/S - # requests sent last .2f seconds %d\n",
+			fmt.Printf("Throughput in the last %.2f seconds: %.2f R/S - # requests sent last %.2f seconds %d\n",
 				throughputInterval,
 				throughput,
 				throughputInterval,
