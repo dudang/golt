@@ -29,9 +29,9 @@ func executeRequestsSequence(httpRequests []GoltRequest, httpClient *http.Client
 	for _, request := range httpRequests {
 		var req *http.Request
 		if extractionWasDone {
-			req = buildRegexRequest(request, extractorMap)
+			req = BuildRegexRequest(request, extractorMap)
 		} else {
-			req = buildRequest(request)
+			req = BuildRequest(request)
 		}
 
 		// Notify the watcher that the request is sent for throughput duties
@@ -64,7 +64,7 @@ func executeRequestsSequence(httpRequests []GoltRequest, httpClient *http.Client
 	}
 }
 
-func buildRegexRequest(request GoltRequest, extractorMap map[string]string) *http.Request{
+func BuildRegexRequest(request GoltRequest, extractorMap map[string]string) *http.Request{
 	payloadString := generatePayload(request, extractorMap)
 	payload := []byte(payloadString)
 
@@ -77,7 +77,7 @@ func buildRegexRequest(request GoltRequest, extractorMap map[string]string) *htt
 	return req
 }
 
-func buildRequest(request GoltRequest) *http.Request {
+func BuildRequest(request GoltRequest) *http.Request {
 	payload := []byte(request.Payload)
 	req, _ := http.NewRequest(request.Method, request.URL, bytes.NewBuffer(payload))
 	for k, v := range request.Headers {
