@@ -1,0 +1,9 @@
+golt:
+  -
+    threads: 10
+    repetitions: 3
+    stage: 1
+    requests:
+      -
+        url: "http://www.google.com"
+        method: "GET"

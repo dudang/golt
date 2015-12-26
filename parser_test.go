@@ -1,27 +1,25 @@
 package main
 
-import (
-	"testing"
-)
+import "testing"
+
+var inputTable = []struct {
+	in           string
+	expectError  bool
+	errorMessage string
+}{
+	{"test/golt-test.json", false, "Failed to parse the JSON file"},
+	{"test/golt-test.yaml", false, "Failed to parse the YAML file"},
+	{"test/golt-test.yml", false, "Failed to parse the YML file"},
+	{"test/golt-test.txt", true, "Failed to detect files of the supported formats"},
+	{"non_existing_file.json", true, "Failed to detect non-existing files"},
+}
 
 func TestParseInputFile(t *testing.T) {
-	_, err := ParseInputFile("test/golt-test.json")
-	if err != nil {
-		t.Fail()
-	}
-
-	_, err = ParseInputFile("test/golt-test.yaml")
-	if err != nil {
-		t.Fail()
-	}
-
-	_, err = ParseInputFile("wrong_file.json")
-	if err == nil {
-		t.Fail()
-	}
-
-	_, err = ParseInputFile("test/golt-test.txt")
-	if err == nil {
-		t.Fail()
+	for _, entry := range inputTable {
+		_, error := ParseInputFile(entry.in)
+		hasError := error != nil
+		if hasError != entry.expectError {
+			t.Error(entry.errorMessage)
+		}
 	}
 }
