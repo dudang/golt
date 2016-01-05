@@ -1,11 +1,8 @@
 package main
 import (
 	"fmt"
-	"bytes"
 	"time"
 	"regexp"
-	"strings"
-
 	"io/ioutil"
 	"net/http"
 )
