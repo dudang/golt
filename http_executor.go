@@ -20,27 +20,15 @@ func executeHttpRequests(threadGroup GoltThreadGroup, httpClient *http.Client) {
 	}
 }
 
-// TODO: Refactor here, starting to have too many responsibilities for a single method
 func executeRequestsSequence(httpRequests []GoltRequest, httpClient *http.Client, stage int, repetition int) {
 	// TODO: By defining the map here, it's local to the thread, maybe we want something else
 	extractorMap := make(map[string]string)
 	extractionWasDone := false
 
 	for _, request := range httpRequests {
-		var req *http.Request
-		if extractionWasDone {
-			req = BuildRegexRequest(request, extractorMap)
-		} else {
-			req = BuildRequest(request)
-		}
+		req := BuildRequest(extractionWasDone, request, extractorMap)
+		notifyWatcher()
 
-		// Notify the watcher that the request is sent for throughput duties
-		func() {
-			sentRequest := []byte("sent")
-			channel <- sentRequest
-		}()
-
-		// Send request and calculate time
 		start := time.Now()
 		resp, err := sendRequest(req, httpClient)
 		elapsed := time.Since(start)
@@ -52,66 +40,14 @@ func executeRequestsSequence(httpRequests []GoltRequest, httpClient *http.Client
 		// Log result
 		logResult(request, resp, err, stage, repetition, elapsed)
 
-		// Check if we are extracting anything and store it in a Map
-		regexIsDefined := request.Extract.Field != "" && request.Extract.Regex != "" && request.Extract.Var != ""
-		if regexIsDefined {
-			value := executeExtraction(request.Extract, resp)
-			if value != "" {
-				extractorMap[request.Extract.Var] = value
-				extractionWasDone = true
-			}
-		}
+		// Handle all the regular expression extraction
+		extractionWasDone = handleExtraction(request, resp, extractorMap)
 	}
 }
 
-func BuildRegexRequest(request GoltRequest, extractorMap map[string]string) *http.Request{
-	payloadString := generatePayload(request, extractorMap)
-	payload := []byte(payloadString)
-
-	req, _ := http.NewRequest(request.Method, request.URL, bytes.NewBuffer(payload))
-
-	headers := generateHeaders(request, extractorMap)
-	for k, v := range headers {
-		req.Header.Set(k, *v)
-	}
-	return req
-}
-
-func BuildRequest(request GoltRequest) *http.Request {
-	payload := []byte(request.Payload)
-	req, _ := http.NewRequest(request.Method, request.URL, bytes.NewBuffer(payload))
-	for k, v := range request.Headers {
-		req.Header.Set(k, *v)
-	}
-	return req
-}
-
-func generatePayload(request GoltRequest, extractorMap map[string]string) (string) {
-	// We are passing the pointer of the Payload to modify it's value
-	replaceRegex(r, &request.Payload, extractorMap)
-	return request.Payload
-}
-
-func generateHeaders(request GoltRequest, extractorMap map[string]string) map[string]*string {
-	for k := range request.Headers {
-		// We are passing a pointer of the value in the map to replace it's value
-		replaceRegex(r, request.Headers[k], extractorMap)
-	}
-	return request.Headers
-}
-
-func replaceRegex(regex *regexp.Regexp, value *string, extractorMap map[string]string) {
-	/*
-	Given a specific regular expression, a pointer to a string and a map of stored variable
-	This method will have the side effect of changing the value pointer by the string if the regex is matching
-	*/
-	if regex.MatchString(*value) {
-		for _, foundMatch := range regex.FindAllString(*value, -1) {
-			mapKey := foundMatch[2:len(foundMatch)-1]
-			extractedValue := extractorMap[mapKey]
-			*value = strings.Replace(*value, foundMatch, extractedValue, -1)
-		}
-	}
+func notifyWatcher() {
+	sentRequest := []byte("sent")
+	channel <- sentRequest
 }
 
 // TODO: Possibly make this more generic in the future for other protocols
@@ -154,6 +90,19 @@ func isCallSuccessful(assert GoltAssert, response *http.Response) bool {
 
 	isCallSuccessful = isStatusCodeSuccessful && isContentTypeSuccessful && isBodySuccessful
 	return isCallSuccessful
+}
+
+func handleExtraction(request GoltRequest, resp *http.Response, extractorMap map[string]string) bool{
+	// Check if we are extracting anything and store it in a Map
+	regexIsDefined := request.Extract.Field != "" && request.Extract.Regex != "" && request.Extract.Var != ""
+	if regexIsDefined {
+		value := executeExtraction(request.Extract, resp)
+		if value != "" {
+			extractorMap[request.Extract.Var] = value
+			return true
+		}
+	}
+	return false
 }
 
 func executeExtraction(extractor GoltExtractor, response *http.Response) string{

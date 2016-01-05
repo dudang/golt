@@ -25,7 +25,7 @@ func TestBuildRegexRequest(t *testing.T) {
 		Headers: map[string]*string{testHeader: &headerValue},
 	}
 
-	httpRequest := BuildRegexRequest(request, testingMap)
+	httpRequest := buildRegexRequest(request, testingMap)
 
 	body, _ := ioutil.ReadAll(httpRequest.Body)
 	if string(body) != testValue1 {
@@ -42,7 +42,7 @@ func TestBuildRequest(t *testing.T) {
 		Payload: testPayload,
 		Headers: map[string]*string{testHeaderKey: &testHeaderValue},
 	}
-	httpRequest := BuildRequest(request)
+	httpRequest := buildRegularRequest(request)
 	body, _ := ioutil.ReadAll(httpRequest.Body)
 	if string(body) != testPayload {
 		t.Fail()
