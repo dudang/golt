@@ -9,15 +9,6 @@ import (
 
 var logFile *os.File
 
-type LogMessage struct {
-	Stage        int
-	Repetition   int
-	ErrorMessage string
-	Status       int
-	Success      bool
-	Duration     time.Duration
-}
-
 var logger *log.Logger
 
 func SetOutputFile(filename string) {
