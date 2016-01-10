@@ -8,8 +8,7 @@ import (
 )
 
 var logFile *os.File
-
-var logger *log.Logger
+var logger = log.New(os.Stdout, "", 0)
 
 func SetOutputFile(filename string) {
 	logFile, err := os.OpenFile(filename, os.O_TRUNC | os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)

@@ -1,5 +1,8 @@
 package main
-import "time"
+import (
+	"time"
+	"net/http"
+)
 
 // A Golts contains all the GoltThreadGroup generated from a configuration file.
 type Golts struct {
@@ -51,4 +54,8 @@ type LogMessage struct {
 	Status       int
 	Success      bool
 	Duration     time.Duration
+}
+
+type GoltSender interface {
+	Send(request *http.Request) (*http.Response, error)
 }

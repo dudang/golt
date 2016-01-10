@@ -11,6 +11,15 @@ const parallelGroup = "parallel"
 var stageWaitGroup sync.WaitGroup
 var threadWaitGroup sync.WaitGroup
 var channel = make(chan []byte, 1024)
+var httpClient *http.Client
+
+type HttpSender struct {
+	Client *http.Client
+}
+
+func (http HttpSender) Send(request *http.Request) (*http.Response, error) {
+	return http.Client.Do(request)
+}
 
 func ExecuteGoltTest(goltTest Golts, logFile string) {
 	m := generateGoltMap(goltTest)
@@ -51,19 +60,18 @@ func executeStage(stage []GoltThreadGroup) {
 	stageWaitGroup.Add(len(stage))
 
 	for _, item := range stage {
-		httpClient := generateHttpClient(item)
-		go executeThreadGroup(item, httpClient)
+		httpClient = generateHttpClient(item)
+		go executeThreadGroup(item)
 	}
-
 	stageWaitGroup.Wait()
 }
 
-func executeThreadGroup(threadGroup GoltThreadGroup, httpClient *http.Client) {
+func executeThreadGroup(threadGroup GoltThreadGroup) {
 	threadWaitGroup.Add(threadGroup.Threads)
 
 	for i := 0; i < threadGroup.Threads; i++ {
 		go func() {
-			executeHttpRequests(threadGroup, httpClient)
+			executeHttpRequests(threadGroup, HttpSender{httpClient})
 			threadWaitGroup.Done()
 		}()
 	}

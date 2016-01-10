@@ -11,13 +11,13 @@ import (
 const regexForVariable = "\\$\\(.*?\\)"
 var r, _ = regexp.Compile(regexForVariable)
 
-func executeHttpRequests(threadGroup GoltThreadGroup, httpClient *http.Client) {
+func executeHttpRequests(threadGroup GoltThreadGroup, sender GoltSender) {
 	for i := 1; i <= threadGroup.Repetitions; i++ {
-		executeRequestsSequence(threadGroup.Requests, httpClient, threadGroup.Stage, i)
+		executeRequestsSequence(threadGroup.Requests, sender, threadGroup.Stage, i)
 	}
 }
 
-func executeRequestsSequence(httpRequests []GoltRequest, httpClient *http.Client, stage int, repetition int) {
+func executeRequestsSequence(httpRequests []GoltRequest, sender GoltSender, stage int, repetition int) {
 	// TODO: By defining the map here, it's local to the thread, maybe we want something else
 	extractorMap := make(map[string]string)
 	extractionWasDone := false
@@ -27,7 +27,7 @@ func executeRequestsSequence(httpRequests []GoltRequest, httpClient *http.Client
 		notifyWatcher()
 
 		start := time.Now()
-		resp, err := sendRequest(req, httpClient)
+		resp, err := sender.Send(req)
 		elapsed := time.Since(start)
 
 		if resp != nil {
@@ -45,11 +45,6 @@ func executeRequestsSequence(httpRequests []GoltRequest, httpClient *http.Client
 func notifyWatcher() {
 	sentRequest := []byte("sent")
 	channel <- sentRequest
-}
-
-// TODO: Possibly make this more generic in the future for other protocols
-func sendRequest(req *http.Request, client *http.Client) (*http.Response, error) {
-	return client.Do(req)
 }
 
 // TODO: Too many parameters on this method, to refactor

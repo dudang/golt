@@ -2,55 +2,18 @@ package main
 
 import (
 	"testing"
-	"fmt"
 	"net/http"
-	"io/ioutil"
 )
 
 const testKey1, testValue1 = "TEST_VALUE_1", "test-string-1"
 const testKey2, testValue2 = "TEST_VALUE_2", "test-string-2"
 var testingMap map[string]string
+var countedRequest = 0
 
 func init() {
 	testingMap = make(map[string]string)
 	testingMap[testKey1] = testValue1
 	testingMap[testKey2] = testValue2
-}
-
-func TestBuildRegexRequest(t *testing.T) {
-	testHeader := "test"
-	headerValue := fmt.Sprintf("$(%s)", testKey2)
-	request := GoltRequest{
-		Payload: fmt.Sprintf("$(%s)", testKey1),
-		Headers: map[string]*string{testHeader: &headerValue},
-	}
-
-	httpRequest := buildRegexRequest(request, testingMap)
-
-	body, _ := ioutil.ReadAll(httpRequest.Body)
-	if string(body) != testValue1 {
-		t.Fail()
-	}
-	if httpRequest.Header.Get(testHeader) != testValue2 {
-		t.Fail()
-	}
-}
-
-func TestBuildRequest(t *testing.T) {
-	testHeaderKey, testHeaderValue, testPayload := "headerKey", "headerValue", "payload"
-	request := GoltRequest{
-		Payload: testPayload,
-		Headers: map[string]*string{testHeaderKey: &testHeaderValue},
-	}
-	httpRequest := buildRegularRequest(request)
-	body, _ := ioutil.ReadAll(httpRequest.Body)
-	if string(body) != testPayload {
-		t.Fail()
-	}
-	if httpRequest.Header.Get(testHeaderKey) != testHeaderValue {
-		t.Fail()
-	}
-
 }
 
 func TestIsCallSuccessful(t *testing.T) {
@@ -102,4 +65,32 @@ func TestIsCallSuccessful(t *testing.T) {
 	if isCallSuccessful(assert, wrongResponse) == true {
 		t.Fail()
 	}
+}
+
+func TestExecuteRequestsSequence(t *testing.T) {
+	requests := []GoltRequest{GoltRequest{}}
+	sender := MockSender{}
+	executeRequestsSequence(requests, sender, 1, 1)
+	if countedRequest != 1 {
+		t.Error("Request sent should have been 1")
+	}
+}
+
+
+type MockReader struct {}
+func (reader MockReader) Read(p []byte) (int, error) {return 0, nil}
+
+type MockWriter struct {}
+func (writer MockWriter) Close() error {return nil}
+
+type MockReadCloser struct {
+	MockReader
+	MockWriter
+}
+
+type MockSender struct {}
+
+func (sender MockSender) Send(req *http.Request) (*http.Response, error) {
+	countedRequest += 1
+	return &http.Response{Body: MockReadCloser{}}, nil
 }
