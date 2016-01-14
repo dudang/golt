@@ -6,6 +6,10 @@ import (
 	"net/http"
 )
 
+
+const regexForVariable = "\\$\\(.*?\\)"
+var r, _ = regexp.Compile(regexForVariable)
+
 func BuildRequest(shouldRegex bool, request GoltRequest, regexMap map[string]string) *http.Request{
 	if shouldRegex {
 		return buildRegexRequest(request, regexMap)

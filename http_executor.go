@@ -8,9 +8,6 @@ import (
 )
 
 
-const regexForVariable = "\\$\\(.*?\\)"
-var r, _ = regexp.Compile(regexForVariable)
-
 func executeHttpRequests(threadGroup GoltThreadGroup, sender GoltSender) {
 	for i := 1; i <= threadGroup.Repetitions; i++ {
 		executeRequestsSequence(threadGroup.Requests, sender, threadGroup.Stage, i)
