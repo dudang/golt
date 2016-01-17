@@ -1,6 +1,5 @@
 package main
 import (
-	"time"
 	"net/http"
 )
 
@@ -13,6 +12,7 @@ type Golts struct {
 // from a configuration file.
 type GoltThreadGroup struct {
 	Threads     int
+	Timeout     int
 	Repetitions int
 	Stage       int
 	Type        string
@@ -33,9 +33,8 @@ type GoltRequest struct {
 // A GoltAssert contains the configuration of the assertions to be made for a
 // GoltRequest.
 type GoltAssert struct {
-	Timeout int
-	Status  int
-	Type    string
+	Status int
+	Type   string
 }
 
 // A GoltExtractor contains the configuration to extract information of the
@@ -45,15 +44,6 @@ type GoltExtractor struct {
 	Field string
 	Regex string
 	// TODO: Have the possibility to extract the value of a JSON field from the headers/body
-}
-
-type LogMessage struct {
-	Stage        int
-	Repetition   int
-	ErrorMessage string
-	Status       int
-	Success      bool
-	Duration     time.Duration
 }
 
 type GoltSender interface {

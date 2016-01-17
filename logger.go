@@ -7,30 +7,40 @@ import (
 	"time"
 )
 
-var logFile *os.File
-var logger = log.New(os.Stdout, "", 0)
+type GoltLogger struct{
+	LogFile *os.File
+	Logger *log.Logger
+}
 
-func SetOutputFile(filename string) {
-	logFile, err := os.OpenFile(filename, os.O_TRUNC | os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+type LogMessage struct {
+	Url          string
+	ErrorMessage string
+	Status       int
+	Success      bool
+	Duration     time.Duration
+}
+
+func (l *GoltLogger) SetOutputFile(filename string) {
+	var err error
+	l.LogFile, err = os.OpenFile(filename, os.O_TRUNC | os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
 	if err != nil {
 		fmt.Printf("error opening file: %v", err)
 	}
-	logger = log.New(logFile, "", 0)
-	logger.Println("Stage,Repetitions,Status Code,Success,Duration,Error Message")
+	l.Logger = log.New(l.LogFile, "", 0)
+	l.Logger.Println("url,statusCode,success,duration,errorMessage")
 }
 
-func Log(message LogMessage) {
+func (l *GoltLogger) Log(message LogMessage) {
 	milliseconds := message.Duration.Nanoseconds() / int64(time.Millisecond)
-	msg := fmt.Sprintf("%d,%d,%d,%t,%d,%v",
-		message.Stage,
-		message.Repetition,
+	msg := fmt.Sprintf("%s,%d,%t,%d,%v",
+		message.Url,
 		message.Status,
 		message.Success,
 		milliseconds,
 		message.ErrorMessage)
-	logger.Printf("%s\n", msg)
+	l.Logger.Printf("%s\n", msg)
 }
 
-func Finish() {
-	logFile.Close()
+func (l *GoltLogger) Finish() {
+	l.LogFile.Close()
 }

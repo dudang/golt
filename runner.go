@@ -4,21 +4,25 @@ import (
 	"sort"
 	"time"
 	"net/http"
+	"log"
+	"os"
 )
-
-const parallelGroup = "parallel"
 
 var stageWaitGroup sync.WaitGroup
 var threadWaitGroup sync.WaitGroup
 var channel = make(chan []byte, 1024)
 var httpClient *http.Client
+var logger *GoltLogger
+var watcher *GoltWatcher
 
-type HttpSender struct {
-	Client *http.Client
-}
-
-func (http HttpSender) Send(request *http.Request) (*http.Response, error) {
-	return http.Client.Do(request)
+func init() {
+	logger = &GoltLogger{
+		Logger: log.New(os.Stdout, "", 0),
+	}
+	watcher = &GoltWatcher{
+		Interval: 5.0,
+		WatchingChannel: channel,
+	}
 }
 
 func ExecuteGoltTest(goltTest Golts, logFile string) {
@@ -30,15 +34,15 @@ func ExecuteGoltTest(goltTest Golts, logFile string) {
 	}
 	sort.Ints(keys)
 
-	SetOutputFile(logFile)
-	go Watch(channel)
+	logger.SetOutputFile(logFile)
+	go watcher.Watch()
 	for _, k := range keys {
 		executeStage(m[k])
 	}
 
 	// Output final throughput
-	OutputAverageThroughput()
-	Finish()
+	watcher.OutputAverageThroughput()
+	logger.Finish()
 }
 
 func generateGoltMap(goltTest Golts) map[int][]GoltThreadGroup {
@@ -49,7 +53,6 @@ func generateGoltMap(goltTest Golts) map[int][]GoltThreadGroup {
 			m[element.Stage] = []GoltThreadGroup{element}
 		} else {
 			m[element.Stage] = append(array, element)
-
 		}
 	}
 	return m
@@ -58,7 +61,6 @@ func generateGoltMap(goltTest Golts) map[int][]GoltThreadGroup {
 // FIXME: The two following functions are very repetitive. Find a way to clean it
 func executeStage(stage []GoltThreadGroup) {
 	stageWaitGroup.Add(len(stage))
-
 	for _, item := range stage {
 		httpClient = generateHttpClient(item)
 		go executeThreadGroup(item)
@@ -69,9 +71,16 @@ func executeStage(stage []GoltThreadGroup) {
 func executeThreadGroup(threadGroup GoltThreadGroup) {
 	threadWaitGroup.Add(threadGroup.Threads)
 
+	executor := GoltExecutor{
+		ThreadGroup: threadGroup,
+		Sender:	HttpSender{httpClient},
+		Logger: logger,
+		SendingChannel: channel,
+	}
+
 	for i := 0; i < threadGroup.Threads; i++ {
 		go func() {
-			executeHttpRequests(threadGroup, HttpSender{httpClient})
+			executor.executeHttpRequests()
 			threadWaitGroup.Done()
 		}()
 	}
@@ -81,17 +90,24 @@ func executeThreadGroup(threadGroup GoltThreadGroup) {
 }
 
 func generateHttpClient(threadGroup GoltThreadGroup) *http.Client {
-	// TODO: Currently timeout is not supported with the new data model
-	/*var httpClient *http.Client
-	if item.Assert.Timeout > 0 {
+	var httpClient *http.Client
+	if threadGroup.Timeout > 0 {
 		httpClient = &http.Client{
-			Timeout: time.Duration(time.Millisecond * time.Duration(item.Assert.Timeout)),
+			Timeout: time.Duration(time.Millisecond * time.Duration(threadGroup.Timeout)),
 		}
 	} else {
-		httpClient = &http.Client{}
-	}*/
-	// Default timeout of 30 seconds for HTTP calls to avoid hung threads
-	return &http.Client{
-		Timeout: time.Duration(time.Second * 30),
+		// Default timeout of 30 seconds for HTTP calls to avoid hung threads
+		httpClient = &http.Client{
+			Timeout: time.Duration(time.Second * 30),
+		}
 	}
+	return httpClient
+}
+
+type HttpSender struct {
+	Client *http.Client
+}
+
+func (http HttpSender) Send(request *http.Request) (*http.Response, error) {
+	return http.Client.Do(request)
 }

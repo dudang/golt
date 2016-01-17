@@ -3,6 +3,8 @@ package main
 import (
 	"testing"
 	"net/http"
+	"os"
+	"log"
 )
 
 const testKey1, testValue1 = "TEST_VALUE_1", "test-string-1"
@@ -13,7 +15,7 @@ var countedRequest = 0
 
 var jsonHeaders = http.Header{"Content-Type":[]string{"application/json"}}
 var htmlHeaders = http.Header{"Content-Type":[]string{"text/html"}}
-var executorTestingTable = []struct{
+var assertionTestingTable = []struct{
 	expectedSuccess bool
 	response *http.Response
 } {
@@ -28,7 +30,7 @@ func TestIsCallSuccessful(t *testing.T) {
 		Type: "application/json",
 		Status: 200,
 	}
-	for _, entry := range executorTestingTable {
+	for _, entry := range assertionTestingTable {
 		if isCallSuccessful(assert, entry.response) != entry.expectedSuccess {
 			t.Error("The assertion was not validated properly")
 		}
@@ -37,8 +39,12 @@ func TestIsCallSuccessful(t *testing.T) {
 
 func TestExecuteRequestsSequence(t *testing.T) {
 	requests := []GoltRequest{GoltRequest{}, GoltRequest{}}
-	sender := MockSender{}
-	executeRequestsSequence(requests, sender, 1, 1)
+	executor := GoltExecutor{
+		Sender:	MockSender{},
+		Logger: &GoltLogger{Logger: log.New(os.Stdout, "", 0),},
+		SendingChannel: make(chan []byte, 1024),
+	}
+	executor.executeRequestsSequence(requests)
 	if countedRequest != 2 {
 		t.Error("Request sent should have been 2")
 	}

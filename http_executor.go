@@ -7,24 +7,31 @@ import (
 	"net/http"
 )
 
+type GoltExecutor struct {
+	ThreadGroup GoltThreadGroup
+	Sender	GoltSender
+	Logger	*GoltLogger
+	SendingChannel chan []byte
+}
 
-func executeHttpRequests(threadGroup GoltThreadGroup, sender GoltSender) {
-	for i := 1; i <= threadGroup.Repetitions; i++ {
-		executeRequestsSequence(threadGroup.Requests, sender, threadGroup.Stage, i)
+
+func (e *GoltExecutor) executeHttpRequests() {
+	for i := 1; i <= e.ThreadGroup.Repetitions; i++ {
+		e.executeRequestsSequence(e.ThreadGroup.Requests)
 	}
 }
 
-func executeRequestsSequence(httpRequests []GoltRequest, sender GoltSender, stage int, repetition int) {
+func (e *GoltExecutor) executeRequestsSequence(httpRequests []GoltRequest) {
 	// TODO: By defining the map here, it's local to the thread, maybe we want something else
 	extractorMap := make(map[string]string)
 	extractionWasDone := false
 
 	for _, request := range httpRequests {
 		req := BuildRequest(extractionWasDone, request, extractorMap)
-		notifyWatcher()
+		notifyWatcher(e.SendingChannel)
 
 		start := time.Now()
-		resp, err := sender.Send(req)
+		resp, err := e.Sender.Send(req)
 		elapsed := time.Since(start)
 
 		if resp != nil {
@@ -32,52 +39,51 @@ func executeRequestsSequence(httpRequests []GoltRequest, sender GoltSender, stag
 		}
 
 		// Log result
-		logResult(request, resp, err, stage, repetition, elapsed)
+		e.logResult(request, resp, err, elapsed)
 
 		// Handle all the regular expression extraction
 		extractionWasDone = handleExtraction(request, resp, extractorMap)
 	}
 }
 
-func notifyWatcher() {
-	sentRequest := []byte("sent")
-	channel <- sentRequest
-}
-
 // TODO: Too many parameters on this method, to refactor
-func logResult(request GoltRequest, resp *http.Response, err error, stage int, repetition int, elapsed time.Duration) {
+func (e *GoltExecutor) logResult(request GoltRequest, resp *http.Response, err error, elapsed time.Duration) {
 	var msg LogMessage
 	if err != nil {
 		errorMsg := fmt.Sprintf("%v", err)
-		msg = LogMessage{Stage: stage,
-			Repetition: repetition,
+		msg = LogMessage{
+			Url: request.URL,
 			ErrorMessage: errorMsg,
 			Status: 0,
 			Success: false,
 			Duration: elapsed}
 	} else {
 		isSuccess := isCallSuccessful(request.Assert, resp)
-		msg = LogMessage{Stage: stage,
-			Repetition: repetition,
+		msg = LogMessage{
+			Url: request.URL,
 			ErrorMessage: "N/A",
 			Status: resp.StatusCode,
 			Success: isSuccess,
 			Duration: elapsed}
 	}
-	Log(msg)
+	e.Logger.Log(msg)
+}
+
+func notifyWatcher(channel chan[] byte) {
+	sentRequest := []byte("sent")
+	channel <- sentRequest
 }
 
 func isCallSuccessful(assert GoltAssert, response *http.Response) bool {
 	var isCallSuccessful bool
 	isContentTypeSuccessful := true
-	isBodySuccessful := true
 	isStatusCodeSuccessful := assert.Status == response.StatusCode
 
 	if assert.Type != "" {
 		isContentTypeSuccessful = assert.Type == response.Header.Get("content-type")
 	}
 
-	isCallSuccessful = isStatusCodeSuccessful && isContentTypeSuccessful && isBodySuccessful
+	isCallSuccessful = isStatusCodeSuccessful && isContentTypeSuccessful
 	return isCallSuccessful
 }
 
