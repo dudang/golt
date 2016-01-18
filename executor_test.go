@@ -11,6 +11,7 @@ var countedRequest = 0
 
 var jsonHeaders = http.Header{"Content-Type":[]string{"application/json"}}
 var htmlHeaders = http.Header{"Content-Type":[]string{"text/html"}}
+var utilGenerator = &GoltGenerator{}
 
 var assertionTestingTable = []struct{
 	expectedSuccess bool
@@ -32,6 +33,12 @@ var requestTestingTable = []struct {
 		extractor: GoltExtractor{Field: "headers", Var: "CONTENT_TYPE", Regex: "text/html(.*)"},
 		response: &http.Response{Header: htmlHeaders},
 		expectedValue: "text/html",
+		extractionWasExecuted: true,
+	},
+	{
+		extractor: GoltExtractor{Field: "body", Var: "CONTENT_TYPE", Regex: "text/html(.*)"},
+		response: &http.Response{Body: utilGenerator.buildRegularRequest(GoltRequest{Payload: "text/htmlABC"}).Body},
+		expectedValue: "text/htmlABC",
 		extractionWasExecuted: true,
 	},
 	{
