@@ -5,10 +5,17 @@ import (
 	"io/ioutil"
 )
 
+const testKey1, testValue1 = "TESTING_KEY_1", "TESTING_VALUE_1"
+const testKey2, testValue2 = "TESTING_KEY_2", "TESTING_VALUE_2"
+var generator *GoltGenerator
+
 func init() {
-	testingMap = make(map[string]string)
+	testingMap := make(map[string]string)
 	testingMap[testKey1] = testValue1
 	testingMap[testKey2] = testValue2
+	generator = &GoltGenerator{
+		RegexMap: testingMap,
+	}
 }
 
 func TestBuildRegexRequest(t *testing.T) {
@@ -19,7 +26,7 @@ func TestBuildRegexRequest(t *testing.T) {
 		Headers: map[string]*string{testHeader: &headerValue},
 	}
 
-	httpRequest := buildRegexRequest(request, testingMap)
+	httpRequest := generator.buildRegexRequest(request)
 
 	body, _ := ioutil.ReadAll(httpRequest.Body)
 	if string(body) != testValue1 {
@@ -36,7 +43,7 @@ func TestBuildRequest(t *testing.T) {
 		Payload: testPayload,
 		Headers: map[string]*string{testHeaderKey: &testHeaderValue},
 	}
-	httpRequest := buildRegularRequest(request)
+	httpRequest := generator.buildRegularRequest(request)
 	body, _ := ioutil.ReadAll(httpRequest.Body)
 	if string(body) != testPayload {
 		t.Fail()

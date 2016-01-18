@@ -14,7 +14,6 @@ type GoltExecutor struct {
 	SendingChannel chan []byte
 }
 
-
 func (e *GoltExecutor) executeHttpRequests() {
 	for i := 1; i <= e.ThreadGroup.Repetitions; i++ {
 		e.executeRequestsSequence(e.ThreadGroup.Requests)
@@ -23,11 +22,12 @@ func (e *GoltExecutor) executeHttpRequests() {
 
 func (e *GoltExecutor) executeRequestsSequence(httpRequests []GoltRequest) {
 	// TODO: By defining the map here, it's local to the thread, maybe we want something else
-	extractorMap := make(map[string]string)
+	regexMap := make(map[string]string)
+	generator := &GoltGenerator{RegexMap: regexMap}
 	extractionWasDone := false
 
 	for _, request := range httpRequests {
-		req := BuildRequest(extractionWasDone, request, extractorMap)
+		req := generator.buildRequest(extractionWasDone, request)
 		notifyWatcher(e.SendingChannel)
 
 		start := time.Now()
@@ -42,11 +42,10 @@ func (e *GoltExecutor) executeRequestsSequence(httpRequests []GoltRequest) {
 		e.logResult(request, resp, err, elapsed)
 
 		// Handle all the regular expression extraction
-		extractionWasDone = handleExtraction(request, resp, extractorMap)
+		extractionWasDone = handleExtraction(request.Extract, resp, regexMap)
 	}
 }
 
-// TODO: Too many parameters on this method, to refactor
 func (e *GoltExecutor) logResult(request GoltRequest, resp *http.Response, err error, elapsed time.Duration) {
 	var msg LogMessage
 	if err != nil {
@@ -87,13 +86,13 @@ func isCallSuccessful(assert GoltAssert, response *http.Response) bool {
 	return isCallSuccessful
 }
 
-func handleExtraction(request GoltRequest, resp *http.Response, extractorMap map[string]string) bool{
+func handleExtraction(extractor GoltExtractor, resp *http.Response, regexMap map[string]string) bool{
 	// Check if we are extracting anything and store it in a Map
-	regexIsDefined := request.Extract.Field != "" && request.Extract.Regex != "" && request.Extract.Var != ""
+	regexIsDefined := extractor.Field != "" && extractor.Regex != "" && extractor.Var != ""
 	if regexIsDefined {
-		value := executeExtraction(request.Extract, resp)
+		value := executeExtraction(extractor, resp)
 		if value != "" {
-			extractorMap[request.Extract.Var] = value
+			regexMap[extractor.Var] = value
 			return true
 		}
 	}
