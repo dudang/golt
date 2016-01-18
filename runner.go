@@ -26,7 +26,7 @@ func init() {
 }
 
 func ExecuteGoltTest(goltTest Golts, logFile string) {
-	m := generateGoltMap(goltTest)
+	m := generateStageMap(goltTest)
 
 	var keys []int
 	for k := range m {
@@ -45,7 +45,7 @@ func ExecuteGoltTest(goltTest Golts, logFile string) {
 	logger.Finish()
 }
 
-func generateGoltMap(goltTest Golts) map[int][]GoltThreadGroup {
+func generateStageMap(goltTest Golts) map[int][]GoltThreadGroup {
 	m := make(map[int][]GoltThreadGroup)
 	for _, element := range goltTest.Golt {
 		array := m[element.Stage]
