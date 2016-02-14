@@ -4,8 +4,6 @@ import (
 	"sort"
 	"time"
 	"net/http"
-	"log"
-	"os"
 )
 
 // Multithreading variables
@@ -37,7 +35,6 @@ func ExecuteGoltTest(goltTest Golts, logFile string) {
 	sort.Ints(keys)
 
 	logger = &FileLogger{
-		Logger: log.New(os.Stdout, "", 0),
 		Filename: logFile,
 	}
 	logger.Init()

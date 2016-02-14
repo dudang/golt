@@ -10,7 +10,7 @@ import (
 
 const logFile = "init-test.log";
 const testFile = "unit-test.log";
-const wrongFile = "\\ ";
+const wrongFile = "";
 
 func TestInit(t *testing.T) {
 	logger := &FileLogger{Filename: logFile, }
@@ -21,8 +21,8 @@ func TestInit(t *testing.T) {
 		logger.Finish()
 	}
 	loggerError := &FileLogger{Filename: wrongFile, }
-	loggerError.Init()
-	if loggerError == nil {
+	error := loggerError.Init()
+	if error == nil {
 		t.Error("Was expecting an error opening the wrong file")
 	}
 }
