@@ -8,17 +8,23 @@ import (
 	"os"
 )
 
+// Multithreading variables
 var stageWaitGroup sync.WaitGroup
 var threadWaitGroup sync.WaitGroup
+
+// Communication channel to calculate throughput (request per second)
 var channel = make(chan []byte, 1024)
+
 var httpClient *http.Client
-var logger *GoltLogger
+var logger GoltLogger
 var watcher *GoltWatcher
 
 func init() {
-	logger = &GoltLogger{
+	logger = &FileLogger{
 		Logger: log.New(os.Stdout, "", 0),
 	}
+
+	// TODO: Make the interval parameterizable
 	watcher = &GoltWatcher{
 		Interval: 5.0,
 		WatchingChannel: channel,
@@ -102,12 +108,4 @@ func generateHttpClient(threadGroup GoltThreadGroup) *http.Client {
 		}
 	}
 	return httpClient
-}
-
-type HttpSender struct {
-	Client *http.Client
-}
-
-func (http HttpSender) Send(request *http.Request) (*http.Response, error) {
-	return http.Client.Do(request)
 }

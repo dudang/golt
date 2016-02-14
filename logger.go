@@ -7,11 +7,6 @@ import (
 	"time"
 )
 
-type GoltLogger struct{
-	LogFile *os.File
-	Logger *log.Logger
-}
-
 type LogMessage struct {
 	Url          string
 	ErrorMessage string
@@ -20,7 +15,18 @@ type LogMessage struct {
 	Duration     time.Duration
 }
 
-func (l *GoltLogger) SetOutputFile(filename string) {
+type GoltLogger interface {
+	SetOutputFile(filename string)
+	Log(message LogMessage)
+	Finish()
+}
+
+type FileLogger struct{
+	LogFile *os.File
+	Logger *log.Logger
+}
+
+func (l FileLogger) SetOutputFile(filename string) {
 	var err error
 	l.LogFile, err = os.OpenFile(filename, os.O_TRUNC | os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
 	if err != nil {
@@ -30,7 +36,7 @@ func (l *GoltLogger) SetOutputFile(filename string) {
 	l.Logger.Println("url,statusCode,success,duration,errorMessage")
 }
 
-func (l *GoltLogger) Log(message LogMessage) {
+func (l FileLogger) Log(message LogMessage) {
 	milliseconds := message.Duration.Nanoseconds() / int64(time.Millisecond)
 	msg := fmt.Sprintf("%s,%d,%t,%d,%v",
 		message.Url,
@@ -41,6 +47,6 @@ func (l *GoltLogger) Log(message LogMessage) {
 	l.Logger.Printf("%s\n", msg)
 }
 
-func (l *GoltLogger) Finish() {
+func (l FileLogger) Finish() {
 	l.LogFile.Close()
 }

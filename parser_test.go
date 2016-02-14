@@ -2,7 +2,7 @@ package main
 
 import "testing"
 
-var inputTable = []struct {
+var parserTestingTable = []struct {
 	in           string
 	expectError  bool
 	errorMessage string
@@ -15,7 +15,7 @@ var inputTable = []struct {
 }
 
 func TestParseInputFile(t *testing.T) {
-	for _, entry := range inputTable {
+	for _, entry := range parserTestingTable {
 		_, error := ParseInputFile(entry.in)
 		hasError := error != nil
 		if hasError != entry.expectError {

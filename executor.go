@@ -7,10 +7,24 @@ import (
 	"net/http"
 )
 
+// Interface to send Requests (only HTTP right now, should extend to more)
+// FIXME: Send method should take generic arguments, not HTTP specific arguments
+type GoltSender interface {
+	Send(request *http.Request) (*http.Response, error)
+}
+
+// Implementation of a GoltSender with a HTTP Client
+type HttpSender struct {
+	Client *http.Client
+}
+func (http HttpSender) Send(request *http.Request) (*http.Response, error) {
+	return http.Client.Do(request)
+}
+
 type GoltExecutor struct {
 	ThreadGroup GoltThreadGroup
 	Sender	GoltSender
-	Logger	*GoltLogger
+	Logger	GoltLogger
 	SendingChannel chan []byte
 }
 

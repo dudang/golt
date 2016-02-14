@@ -1,7 +1,4 @@
 package main
-import (
-	"net/http"
-)
 
 // A Golts contains all the GoltThreadGroup generated from a configuration file.
 type Golts struct {
@@ -43,8 +40,4 @@ type GoltExtractor struct {
 	Field string
 	Regex string
 	// TODO: Have the possibility to extract the value of a JSON field from the headers/body
-}
-
-type GoltSender interface {
-	Send(request *http.Request) (*http.Response, error)
 }
