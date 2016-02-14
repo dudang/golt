@@ -37,8 +37,10 @@ func (sender MockErrorSender) Send(req *http.Request) (*http.Response, error) {
 
 type MockLogger struct{}
 
-func (logger MockLogger) Init() {}
 func (logger MockLogger) Finish() {}
+func (logger MockLogger) Init() error{
+	return nil
+}
 func (logger MockLogger) Log(message LogMessage) {
 	if message.Success == true {
 		successfulRequest += 1

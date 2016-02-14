@@ -16,7 +16,7 @@ type LogMessage struct {
 }
 
 type GoltLogger interface {
-	Init()
+	Init() error
 	Log(message LogMessage)
 	Finish()
 }
@@ -27,17 +27,19 @@ type FileLogger struct{
 	Logger *log.Logger
 }
 
-func (l FileLogger) Init() {
+func (logger *FileLogger) Init() error {
 	var err error
-	l.LogFile, err = os.OpenFile(l.Filename, os.O_TRUNC | os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+	logger.LogFile, err = os.OpenFile(logger.Filename, os.O_TRUNC | os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
 	if err != nil {
 		fmt.Printf("error opening file: %v", err)
+		return err
 	}
-	l.Logger = log.New(l.LogFile, "", 0)
-	l.Logger.Println("url,statusCode,success,duration,errorMessage")
+	logger.Logger = log.New(logger.LogFile, "", 0)
+	logger.Logger.Println("url,statusCode,success,duration,errorMessage")
+	return nil
 }
 
-func (l FileLogger) Log(message LogMessage) {
+func (logger *FileLogger) Log(message LogMessage) {
 	milliseconds := message.Duration.Nanoseconds() / int64(time.Millisecond)
 	msg := fmt.Sprintf("%s,%d,%t,%d,%v",
 		message.Url,
@@ -45,9 +47,9 @@ func (l FileLogger) Log(message LogMessage) {
 		message.Success,
 		milliseconds,
 		message.ErrorMessage)
-	l.Logger.Printf("%s\n", msg)
+	logger.Logger.Printf("%s\n", msg)
 }
 
-func (l FileLogger) Finish() {
-	l.LogFile.Close()
+func (logger *FileLogger) Finish() {
+	logger.LogFile.Close()
 }
