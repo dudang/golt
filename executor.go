@@ -14,8 +14,8 @@ type GoltExecutor struct {
 	SendingChannel chan []byte
 }
 
-func (e *GoltExecutor) executeHttpRequests() {
-	for i := 1; i <= e.ThreadGroup.Repetitions; i++ {
+func (e *GoltExecutor) ExecuteHttpRequests() {
+	for i := 0; i < e.ThreadGroup.Repetitions; i++ {
 		e.executeRequestsSequence(e.ThreadGroup.Requests)
 	}
 }

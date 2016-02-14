@@ -80,7 +80,7 @@ func executeThreadGroup(threadGroup GoltThreadGroup) {
 
 	for i := 0; i < threadGroup.Threads; i++ {
 		go func() {
-			executor.executeHttpRequests()
+			executor.ExecuteHttpRequests()
 			threadWaitGroup.Done()
 		}()
 	}

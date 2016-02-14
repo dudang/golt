@@ -15,7 +15,6 @@ type GoltThreadGroup struct {
 	Timeout     int
 	Repetitions int
 	Stage       int
-	Type        string
 	Requests    []GoltRequest
 }
 
