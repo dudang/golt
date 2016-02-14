@@ -18,37 +18,28 @@ func init() {
 	}
 }
 
-func TestBuildRegexRequest(t *testing.T) {
-	testHeader := "test"
-	headerValue := fmt.Sprintf("$(%s)", testKey2)
-	request := GoltRequest{
-		Payload: fmt.Sprintf("$(%s)", testKey1),
-		Headers: map[string]*string{testHeader: &headerValue},
-	}
-
-	httpRequest := generator.buildRegexRequest(request)
-
-	body, _ := ioutil.ReadAll(httpRequest.Body)
-	if string(body) != testValue1 {
-		t.Fail()
-	}
-	if httpRequest.Header.Get(testHeader) != testValue2 {
-		t.Fail()
-	}
-}
-
 func TestBuildRequest(t *testing.T) {
+	regexHeader := "test"
+	headerValue := fmt.Sprintf("$(%s)", testKey2)
+	regexRequest := GoltRequest{
+		Payload: fmt.Sprintf("$(%s)", testKey1),
+		Headers: map[string]*string{regexHeader: &headerValue},
+	}
+	httpRequest := generator.BuildRequest(true, regexRequest)
+	regexBody, _ := ioutil.ReadAll(httpRequest.Body)
+	if string(regexBody) != testValue1  || httpRequest.Header.Get(regexHeader) != testValue2{
+		t.Error("Regex request returned is not valid")
+	}
+
 	testHeaderKey, testHeaderValue, testPayload := "headerKey", "headerValue", "payload"
 	request := GoltRequest{
 		Payload: testPayload,
 		Headers: map[string]*string{testHeaderKey: &testHeaderValue},
 	}
-	httpRequest := generator.buildRegularRequest(request)
-	body, _ := ioutil.ReadAll(httpRequest.Body)
-	if string(body) != testPayload {
-		t.Fail()
+	generatedRequest := generator.BuildRequest(false, request)
+	generatedBody, _ := ioutil.ReadAll(generatedRequest.Body)
+	if string(generatedBody) != testPayload  || generatedRequest.Header.Get(testHeaderKey) != testHeaderValue{
+		t.Error("Regular request returned is not valid")
 	}
-	if httpRequest.Header.Get(testHeaderKey) != testHeaderValue {
-		t.Fail()
-	}
+
 }

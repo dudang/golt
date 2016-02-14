@@ -14,7 +14,7 @@ type GoltGenerator struct {
 	RegexMap map[string]string
 }
 
-func (g *GoltGenerator) buildRequest(shouldRegex bool, request GoltRequest) *http.Request{
+func (g *GoltGenerator) BuildRequest(shouldRegex bool, request GoltRequest) *http.Request{
 	if shouldRegex {
 		return g.buildRegexRequest(request)
 	} else {

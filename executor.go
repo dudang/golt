@@ -41,7 +41,7 @@ func (e *GoltExecutor) executeRequestsSequence(httpRequests []GoltRequest) {
 	extractionWasDone := false
 
 	for _, request := range httpRequests {
-		req := generator.buildRequest(extractionWasDone, request)
+		req := generator.BuildRequest(extractionWasDone, request)
 		notifyWatcher(e.SendingChannel)
 
 		start := time.Now()
