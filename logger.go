@@ -16,19 +16,20 @@ type LogMessage struct {
 }
 
 type GoltLogger interface {
-	SetOutputFile(filename string)
+	Init()
 	Log(message LogMessage)
 	Finish()
 }
 
 type FileLogger struct{
+	Filename string
 	LogFile *os.File
 	Logger *log.Logger
 }
 
-func (l FileLogger) SetOutputFile(filename string) {
+func (l FileLogger) Init() {
 	var err error
-	l.LogFile, err = os.OpenFile(filename, os.O_TRUNC | os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+	l.LogFile, err = os.OpenFile(l.Filename, os.O_TRUNC | os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
 	if err != nil {
 		fmt.Printf("error opening file: %v", err)
 	}

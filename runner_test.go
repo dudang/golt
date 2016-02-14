@@ -12,6 +12,7 @@ var testPlan = Golts{
 		GoltThreadGroup{Stage: 1, Timeout: 200},
 	},
 }
+
 func TestGenerateStageMap(t *testing.T) {
 	m := generateStageMap(testPlan)
 	if len(m[1]) != 2 || len(m[2]) != 1 || len(m[3]) != 1 {

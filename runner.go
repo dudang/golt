@@ -20,10 +20,6 @@ var logger GoltLogger
 var watcher *GoltWatcher
 
 func init() {
-	logger = &FileLogger{
-		Logger: log.New(os.Stdout, "", 0),
-	}
-
 	// TODO: Make the interval parameterizable
 	watcher = &GoltWatcher{
 		Interval: 5.0,
@@ -40,7 +36,11 @@ func ExecuteGoltTest(goltTest Golts, logFile string) {
 	}
 	sort.Ints(keys)
 
-	logger.SetOutputFile(logFile)
+	logger = &FileLogger{
+		Logger: log.New(os.Stdout, "", 0),
+		Filename: logFile,
+	}
+	logger.Init()
 	go watcher.Watch()
 	for _, k := range keys {
 		executeStage(m[k])
