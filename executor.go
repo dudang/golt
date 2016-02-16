@@ -39,7 +39,6 @@ func (e *GoltExecutor) executeRequestsSequence(httpRequests []GoltRequest) {
 	regexMap := make(map[string]string)
 	generator := &GoltGenerator{RegexMap: regexMap}
 	extractionWasDone := false
-
 	for _, request := range httpRequests {
 		req := generator.BuildRequest(extractionWasDone, request)
 		notifyWatcher(e.SendingChannel)
@@ -50,13 +49,13 @@ func (e *GoltExecutor) executeRequestsSequence(httpRequests []GoltRequest) {
 
 		if resp != nil {
 			defer resp.Body.Close()
+
+			// Handle all the regular expression extraction
+			extractionWasDone = handleExtraction(request.Extract, resp, regexMap)
 		}
 
 		// Log result
 		e.logResult(request, resp, err, elapsed)
-
-		// Handle all the regular expression extraction
-		extractionWasDone = handleExtraction(request.Extract, resp, regexMap)
 	}
 }
 
@@ -90,10 +89,12 @@ func notifyWatcher(channel chan[] byte) {
 func isCallSuccessful(assert GoltAssert, response *http.Response) bool {
 	var isCallSuccessful bool
 	isContentTypeSuccessful := true
-	isStatusCodeSuccessful := assert.Status == response.StatusCode
+
+	// Verify here if the status expect in the assert is the same as the response or it's not defined (not checking)
+	isStatusCodeSuccessful := assert.Status == response.StatusCode || assert.Status == 0
 
 	if assert.Type != "" {
-		isContentTypeSuccessful = assert.Type == response.Header.Get("content-type")
+		isContentTypeSuccessful = assert.Type == response.Header.Get("Content-Type")
 	}
 
 	isCallSuccessful = isStatusCodeSuccessful && isContentTypeSuccessful

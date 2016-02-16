@@ -4,6 +4,7 @@ import (
 	"testing"
 	"net/http"
 	"errors"
+	"fmt"
 )
 
 var countedRequest = 0
@@ -28,7 +29,13 @@ func (writer MockWriter) Close() error {
 }
 func (sender MockSender) Send(req *http.Request) (*http.Response, error) {
 	countedRequest += 1
-	return &http.Response{Body: MockReadCloser{}}, nil
+	headers := http.Header{}
+	headers.Set("content-type", "text/html")
+	return &http.Response{
+		Body: MockReadCloser{},
+		Header: headers,
+		StatusCode: 200,
+	}, nil
 }
 func (sender MockErrorSender) Send(req *http.Request) (*http.Response, error) {
 	countedRequest += 1
@@ -48,12 +55,18 @@ func (logger MockLogger) Log(message LogMessage) {
 }
 
 func TestExecuteHttpRequests(t *testing.T) {
+	requestWithRegex := GoltRequest{
+		URL: "http://www.google.com",
+		Method: "GET",
+		Assert: GoltAssert{Status: 200, Type: "text/html"},
+		Extract: GoltExtractor{Var: "EXTRACT", Field: "headers", Regex: "text/html(.*)?"},
+	}
 	threadGroup := GoltThreadGroup{
 		Threads: 5,
 		Timeout: 500,
 		Repetitions: 5,
 		Stage: 1,
-		Requests: []GoltRequest{GoltRequest{}, GoltRequest{}},
+		Requests: []GoltRequest{requestWithRegex, GoltRequest{}},
 	}
 
 	executor := GoltExecutor{
@@ -79,6 +92,7 @@ func resetAndTest(executor GoltExecutor, expectedRequests int, expectedSuccess i
 	successfulRequest = 0
 	countedRequest = 0
 	executor.ExecuteHttpRequests()
+	fmt.Println("DONE")
 	if countedRequest != expectedRequests  || successfulRequest != expectedSuccess {
 		return false
 	}
