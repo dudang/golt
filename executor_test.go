@@ -1,10 +1,10 @@
 package main
 
 import (
-	"testing"
-	"net/http"
 	"errors"
 	"fmt"
+	"net/http"
+	"testing"
 )
 
 var countedRequest = 0
@@ -32,8 +32,8 @@ func (sender MockSender) Send(req *http.Request) (*http.Response, error) {
 	headers := http.Header{}
 	headers.Set("content-type", "text/html")
 	return &http.Response{
-		Body: MockReadCloser{},
-		Header: headers,
+		Body:       MockReadCloser{},
+		Header:     headers,
 		StatusCode: 200,
 	}, nil
 }
@@ -45,7 +45,7 @@ func (sender MockErrorSender) Send(req *http.Request) (*http.Response, error) {
 type MockLogger struct{}
 
 func (logger MockLogger) Finish() {}
-func (logger MockLogger) Init() error{
+func (logger MockLogger) Init() error {
 	return nil
 }
 func (logger MockLogger) Log(message LogMessage) {
@@ -56,30 +56,30 @@ func (logger MockLogger) Log(message LogMessage) {
 
 func TestExecuteHttpRequests(t *testing.T) {
 	requestWithRegex := GoltRequest{
-		URL: "http://www.google.com",
-		Method: "GET",
-		Assert: GoltAssert{Status: 200, Type: "text/html"},
+		URL:     "http://www.google.com",
+		Method:  "GET",
+		Assert:  GoltAssert{Status: 200, Type: "text/html"},
 		Extract: GoltExtractor{Var: "EXTRACT", Field: "headers", Regex: "text/html(.*)?"},
 	}
 	threadGroup := GoltThreadGroup{
-		Threads: 5,
-		Timeout: 500,
+		Threads:     5,
+		Timeout:     500,
 		Repetitions: 5,
-		Stage: 1,
-		Requests: []GoltRequest{requestWithRegex, GoltRequest{}},
+		Stage:       1,
+		Requests:    []GoltRequest{requestWithRegex, GoltRequest{}},
 	}
 
 	executor := GoltExecutor{
-		ThreadGroup: threadGroup,
-		Sender:    MockSender{},
-		Logger:    MockLogger{},
+		ThreadGroup:    threadGroup,
+		Sender:         MockSender{},
+		Logger:         MockLogger{},
 		SendingChannel: make(chan []byte, 1024),
 	}
 
 	executorWithError := GoltExecutor{
-		ThreadGroup: threadGroup,
-		Sender:    MockErrorSender{},
-		Logger:    MockLogger{},
+		ThreadGroup:    threadGroup,
+		Sender:         MockErrorSender{},
+		Logger:         MockLogger{},
 		SendingChannel: make(chan []byte, 1024),
 	}
 
@@ -93,7 +93,7 @@ func resetAndTest(executor GoltExecutor, expectedRequests int, expectedSuccess i
 	countedRequest = 0
 	executor.ExecuteHttpRequests()
 	fmt.Println("DONE")
-	if countedRequest != expectedRequests  || successfulRequest != expectedSuccess {
+	if countedRequest != expectedRequests || successfulRequest != expectedSuccess {
 		return false
 	}
 	return true

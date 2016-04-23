@@ -1,20 +1,21 @@
 package main
+
 import (
 	"bytes"
+	"net/http"
 	"regexp"
 	"strings"
-	"net/http"
 )
 
-
 const regexForVariable = "\\$\\(.*?\\)"
+
 var r, _ = regexp.Compile(regexForVariable)
 
 type GoltGenerator struct {
 	RegexMap map[string]string
 }
 
-func (g *GoltGenerator) BuildRequest(shouldRegex bool, request GoltRequest) *http.Request{
+func (g *GoltGenerator) BuildRequest(shouldRegex bool, request GoltRequest) *http.Request {
 	if shouldRegex {
 		return g.buildRegexRequest(request)
 	} else {
@@ -22,7 +23,7 @@ func (g *GoltGenerator) BuildRequest(shouldRegex bool, request GoltRequest) *htt
 	}
 }
 
-func (g *GoltGenerator) buildRegexRequest(request GoltRequest) *http.Request{
+func (g *GoltGenerator) buildRegexRequest(request GoltRequest) *http.Request {
 	payloadString := g.generatePayload(request)
 	payload := []byte(payloadString)
 
@@ -44,7 +45,7 @@ func (g *GoltGenerator) buildRegularRequest(request GoltRequest) *http.Request {
 	return req
 }
 
-func (g *GoltGenerator) generatePayload(request GoltRequest) (string) {
+func (g *GoltGenerator) generatePayload(request GoltRequest) string {
 	// We are passing the pointer of the Payload to modify it's value
 	g.replaceRegex(r, &request.Payload)
 	return request.Payload
@@ -60,12 +61,12 @@ func (g *GoltGenerator) generateHeaders(request GoltRequest) map[string]*string 
 
 func (g *GoltGenerator) replaceRegex(regex *regexp.Regexp, value *string) {
 	/*
-	Given a specific regular expression, a pointer to a string and a map of stored variable
-	This method will have the side effect of changing the value pointer by the string if the regex is matching
+		Given a specific regular expression, a pointer to a string and a map of stored variable
+		This method will have the side effect of changing the value pointer by the string if the regex is matching
 	*/
 	if regex.MatchString(*value) {
 		for _, foundMatch := range regex.FindAllString(*value, -1) {
-			mapKey := foundMatch[2:len(foundMatch)-1]
+			mapKey := foundMatch[2 : len(foundMatch)-1]
 			extractedValue := g.RegexMap[mapKey]
 			*value = strings.Replace(*value, foundMatch, extractedValue, -1)
 		}

@@ -1,26 +1,26 @@
 package main
 
 import (
-	"testing"
-	"os"
-	"time"
 	"bufio"
+	"os"
 	"strings"
+	"testing"
+	"time"
 )
 
-const logFile = "init-test.log";
-const testFile = "unit-test.log";
-const wrongFile = "";
+const logFile = "init-test.log"
+const testFile = "unit-test.log"
+const wrongFile = ""
 
 func TestInit(t *testing.T) {
-	logger := &FileLogger{Filename: logFile, }
+	logger := &FileLogger{Filename: logFile}
 	logger.Init()
 	if _, err := os.Stat(logFile); err != nil {
 		t.Error("The logger was not initialized properly")
 	} else {
 		logger.Finish()
 	}
-	loggerError := &FileLogger{Filename: wrongFile, }
+	loggerError := &FileLogger{Filename: wrongFile}
 	error := loggerError.Init()
 	if error == nil {
 		t.Error("Was expecting an error opening the wrong file")
@@ -30,11 +30,11 @@ func TestInit(t *testing.T) {
 func TestLog(t *testing.T) {
 	// Prepare the file to be logged in
 	msg := LogMessage{
-		Url: "http://test.com",
+		Url:          "http://test.com",
 		ErrorMessage: "N/A",
-		Status: 200,
-		Success: true,
-		Duration: time.Since(time.Now()),
+		Status:       200,
+		Success:      true,
+		Duration:     time.Since(time.Now()),
 	}
 	logger := &FileLogger{
 		Filename: testFile,

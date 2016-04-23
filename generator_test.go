@@ -1,12 +1,14 @@
 package main
+
 import (
-	"testing"
 	"fmt"
 	"io/ioutil"
+	"testing"
 )
 
 const testKey1, testValue1 = "TESTING_KEY_1", "TESTING_VALUE_1"
 const testKey2, testValue2 = "TESTING_KEY_2", "TESTING_VALUE_2"
+
 var generator *GoltGenerator
 
 func init() {
@@ -27,7 +29,7 @@ func TestBuildRequest(t *testing.T) {
 	}
 	httpRequest := generator.BuildRequest(true, regexRequest)
 	regexBody, _ := ioutil.ReadAll(httpRequest.Body)
-	if string(regexBody) != testValue1  || httpRequest.Header.Get(regexHeader) != testValue2{
+	if string(regexBody) != testValue1 || httpRequest.Header.Get(regexHeader) != testValue2 {
 		t.Error("Regex request returned is not valid")
 	}
 
@@ -38,7 +40,7 @@ func TestBuildRequest(t *testing.T) {
 	}
 	generatedRequest := generator.BuildRequest(false, request)
 	generatedBody, _ := ioutil.ReadAll(generatedRequest.Body)
-	if string(generatedBody) != testPayload  || generatedRequest.Header.Get(testHeaderKey) != testHeaderValue{
+	if string(generatedBody) != testPayload || generatedRequest.Header.Get(testHeaderKey) != testHeaderValue {
 		t.Error("Regular request returned is not valid")
 	}
 

@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"log"
+	"os"
 	"time"
 )
 
@@ -21,15 +21,15 @@ type GoltLogger interface {
 	Finish()
 }
 
-type FileLogger struct{
+type FileLogger struct {
 	Filename string
-	LogFile *os.File
-	Logger *log.Logger
+	LogFile  *os.File
+	Logger   *log.Logger
 }
 
 func (logger *FileLogger) Init() error {
 	var err error
-	logger.LogFile, err = os.OpenFile(logger.Filename, os.O_TRUNC | os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+	logger.LogFile, err = os.OpenFile(logger.Filename, os.O_TRUNC|os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		fmt.Printf("error opening file: %v", err)
 		return err

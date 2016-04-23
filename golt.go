@@ -1,9 +1,9 @@
 package main
 
 import (
-	"os"
 	"fmt"
 	"github.com/codegangsta/cli"
+	"os"
 )
 
 var testFilename string
@@ -19,15 +19,15 @@ func main() {
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name: "file, f",
-			Value: "golt.json",
-			Usage: "full path to the load test file",
+			Name:        "file, f",
+			Value:       "golt.json",
+			Usage:       "full path to the load test file",
 			Destination: &testFilename,
 		},
 		cli.StringFlag{
-			Name: "log, l",
-			Value: "golt.log",
-			Usage: "full path the the log file",
+			Name:        "log, l",
+			Value:       "golt.log",
+			Usage:       "full path the the log file",
 			Destination: &logFilename,
 		},
 	}

@@ -1,9 +1,10 @@
 package main
+
 import (
-	"sync"
-	"sort"
-	"time"
 	"net/http"
+	"sort"
+	"sync"
+	"time"
 )
 
 // Multithreading variables
@@ -20,7 +21,7 @@ var watcher *GoltWatcher
 func init() {
 	// TODO: Make the interval parameterizable
 	watcher = &GoltWatcher{
-		Interval: 5.0,
+		Interval:        5.0,
 		WatchingChannel: channel,
 	}
 }
@@ -75,9 +76,9 @@ func executeThreadGroup(threadGroup GoltThreadGroup) {
 	threadWaitGroup.Add(threadGroup.Threads)
 
 	executor := GoltExecutor{
-		ThreadGroup: threadGroup,
-		Sender:	HttpSender{httpClient},
-		Logger: logger,
+		ThreadGroup:    threadGroup,
+		Sender:         HttpSender{httpClient},
+		Logger:         logger,
 		SendingChannel: channel,
 	}
 

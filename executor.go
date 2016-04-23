@@ -1,10 +1,11 @@
 package main
+
 import (
 	"fmt"
-	"time"
-	"regexp"
 	"io/ioutil"
 	"net/http"
+	"regexp"
+	"time"
 )
 
 // Interface to send Requests (only HTTP right now, should extend to more)
@@ -17,14 +18,15 @@ type GoltSender interface {
 type HttpSender struct {
 	Client *http.Client
 }
+
 func (http HttpSender) Send(request *http.Request) (*http.Response, error) {
 	return http.Client.Do(request)
 }
 
 type GoltExecutor struct {
-	ThreadGroup GoltThreadGroup
-	Sender	GoltSender
-	Logger	GoltLogger
+	ThreadGroup    GoltThreadGroup
+	Sender         GoltSender
+	Logger         GoltLogger
 	SendingChannel chan []byte
 }
 
@@ -64,24 +66,24 @@ func (e *GoltExecutor) logResult(request GoltRequest, resp *http.Response, err e
 	if err != nil {
 		errorMsg := fmt.Sprintf("%v", err)
 		msg = LogMessage{
-			Url: request.URL,
+			Url:          request.URL,
 			ErrorMessage: errorMsg,
-			Status: 0,
-			Success: false,
-			Duration: elapsed}
+			Status:       0,
+			Success:      false,
+			Duration:     elapsed}
 	} else {
 		isSuccess := isCallSuccessful(request.Assert, resp)
 		msg = LogMessage{
-			Url: request.URL,
+			Url:          request.URL,
 			ErrorMessage: "N/A",
-			Status: resp.StatusCode,
-			Success: isSuccess,
-			Duration: elapsed}
+			Status:       resp.StatusCode,
+			Success:      isSuccess,
+			Duration:     elapsed}
 	}
 	e.Logger.Log(msg)
 }
 
-func notifyWatcher(channel chan[] byte) {
+func notifyWatcher(channel chan []byte) {
 	sentRequest := []byte("sent")
 	channel <- sentRequest
 }
@@ -101,7 +103,7 @@ func isCallSuccessful(assert GoltAssert, response *http.Response) bool {
 	return isCallSuccessful
 }
 
-func handleExtraction(extractor GoltExtractor, resp *http.Response, regexMap map[string]string) bool{
+func handleExtraction(extractor GoltExtractor, resp *http.Response, regexMap map[string]string) bool {
 	// Check if we are extracting anything and store it in a Map
 	regexIsDefined := extractor.Field != "" && extractor.Regex != "" && extractor.Var != ""
 	if regexIsDefined {
@@ -114,7 +116,7 @@ func handleExtraction(extractor GoltExtractor, resp *http.Response, regexMap map
 	return false
 }
 
-func executeExtraction(extractor GoltExtractor, response *http.Response) string{
+func executeExtraction(extractor GoltExtractor, response *http.Response) string {
 	r, _ := regexp.Compile(extractor.Regex)
 	switch extractor.Field {
 	case "headers":

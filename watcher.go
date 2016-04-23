@@ -1,8 +1,8 @@
 package main
 
 import (
-	"time"
 	"fmt"
+	"time"
 )
 
 var start time.Time
@@ -19,14 +19,14 @@ func (w *GoltWatcher) Watch() {
 	timeCounter := w.Interval
 	start = time.Now()
 	for {
-		event := <- w.WatchingChannel
+		event := <-w.WatchingChannel
 		if event != nil {
 			w.requestSent++
 			w.requestDelta++
 		}
 		delta = time.Since(start)
 		if delta.Seconds() > timeCounter {
-			throughput := float64(w.requestDelta)/w.Interval
+			throughput := float64(w.requestDelta) / w.Interval
 			fmt.Printf("Throughput in the last %.2f seconds: %.2f R/S - # requests sent last %.2f seconds %d\n",
 				w.Interval,
 				throughput,
@@ -42,5 +42,5 @@ func (w *GoltWatcher) Watch() {
 func (w *GoltWatcher) OutputAverageThroughput() {
 	spentTime := time.Since(start)
 	throughput := float64(w.requestSent) / spentTime.Seconds()
-	fmt.Printf("Average throughput: %f R/S - # requests sent %d\n",throughput, w.requestSent)
+	fmt.Printf("Average throughput: %f R/S - # requests sent %d\n", throughput, w.requestSent)
 }
