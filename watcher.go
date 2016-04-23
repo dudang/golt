@@ -36,7 +36,6 @@ func (w *GoltWatcher) Watch() {
 			timeCounter += w.Interval
 		}
 	}
-	w.OutputAverageThroughput()
 }
 
 func (w *GoltWatcher) OutputAverageThroughput() {
